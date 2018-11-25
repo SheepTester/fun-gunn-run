@@ -30,15 +30,13 @@ for (let i = 0; i < 30; i++) {
 function paint() {
   c.clearRect(-cwidth / 2, -cheight / 2, cwidth, cheight);
   const {paths, objects} = calculate3D([
-    {x: 0, z: 0, width: 100, height: 100}
+    {x: 0, z: 0, width: 100, height: 300}
   ], sheep);
   c.fillStyle = '#b0a47e';
   paths.forEach(path => {
     c.beginPath();
     c.moveTo(path[0].x, path[0].y);
-    c.lineTo(path[1].x, path[1].y);
-    c.lineTo(path[2].x, path[2].y);
-    c.lineTo(path[3].x, path[3].y);
+    path.slice(1).forEach(({x, y}) => c.lineTo(x, y))
     c.fill();
   });
   objects.forEach(obj => {

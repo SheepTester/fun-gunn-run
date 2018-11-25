@@ -20,6 +20,13 @@ function flatify(x, y, z) {
     scale: 1 / z * VIEW_FACTOR
   };
 }
+function intersect(pt1, pt2) {
+  return {x: pt1.x + (NEAR_PLANE - pt1.z) / (pt2.z - pt1.z) * (pt2.x - pt1.x), z: NEAR_PLANE};
+}
+function getItem(arr, index) {
+  const length = arr.length;
+  return (index + length) % length;
+}
 function calculate3D(paths, objects) {
   if (keys.left) camera.rot -= 0.05;
   if (keys.right) camera.rot += 0.05;
@@ -40,10 +47,34 @@ function calculate3D(paths, objects) {
     const points = [[obj.x, obj.z], [obj.x + obj.width, obj.z],
       [obj.x + obj.width, obj.z + obj.height], [obj.x, obj.z + obj.height]]
       .map(([x, z]) => transform(camera, x, z, sin, cos));
-    if (points.find(({z}) => z < NEAR_PLANE))
-      return;
-    else
-      return points.map(({x, z}) => flatify(x, GROUND_Y, z));
+    for (let i = 0; i < points.length; i++) {
+      const currentPt = points[i];
+      if (currentPt.z < NEAR_PLANE) {
+        for (let lastPt = currentPt; points.length;) {
+          const pt = points[getItem(points, i - 1)];
+          if (pt.z < NEAR_PLANE) {
+            lastPt = pt;
+            points.splice(getItem(points, i - 1), 1);
+          } else {
+            points.splice(i, 0, intersect(lastPt, pt));
+            break;
+          }
+        }
+        points.splice(i + 1, 1);
+        for (let lastPt = currentPt; points.length;) {
+          const pt = points[getItem(points, i + 1)];
+          if (pt.z < NEAR_PLANE) {
+            lastPt = pt;
+            points.splice(getItem(points, i + 1), 1);
+          } else {
+            points.splice(getItem(points, i + 1), 0, intersect(lastPt, pt));
+            break;
+          }
+        }
+      }
+    }
+    if (points.length < 3) return;
+    return points.map(({x, z}) => flatify(x, GROUND_Y, z));
   }).filter(obj => obj);
   objects = objects.map(obj => {
     const transformation = transform(camera, obj.x, obj.z, sin, cos);
