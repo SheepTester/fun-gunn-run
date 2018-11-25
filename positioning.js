@@ -20,8 +20,9 @@ function flatify(x, y, z) {
     scale: 1 / z * VIEW_FACTOR
   };
 }
-function calculate3D(path, objects) {
+function calculate3D(paths, objects) {
   camera.rot += 0.01;
+  camera.x = Math.sin(Date.now() / 100) * 100;
 
   const sin = Math.sin(camera.rot),
   cos = Math.cos(camera.rot);

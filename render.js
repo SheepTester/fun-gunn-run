@@ -29,7 +29,9 @@ for (let i = 0; i < 30; i++) {
 }
 function paint() {
   c.clearRect(-cwidth / 2, -cheight / 2, cwidth, cheight);
-  const {paths, objects} = calculate3D([], sheep);
+  const {paths, objects} = calculate3D([
+    {x: 0, z: 0, width: 100, height: 100}
+  ], sheep);
   objects.forEach(obj => {
     const img = images[obj.type];
     const width = obj.scale * img.width;
