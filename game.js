@@ -91,6 +91,7 @@ function generateMap(zOffset) {
     map.branches = Math.random() * (CHUNK_SIZE - 100);
     map.paths.push({x: -300, z: map.branches + zOffset, width: 600, height: 100});
     map.paths.push({x: -50, z: zOffset, width: 100, height: map.branches});
+    map.objects.push({type: 'hailself', x: 0, z: map.branches + zOffset + 100})
     end = map.branches;
   }
   for (let z = 0; z < end - 300; z += Math.random() * 500 + 250) {

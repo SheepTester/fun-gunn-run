@@ -2,7 +2,8 @@ const imageNames = [ // ./images/[NAME].svg
   'tree',
   'sheep',
   'player_temp',
-  'aplus'
+  'aplus',
+  'hailself'
 ];
 const customSizes = {
   aplus: 20
