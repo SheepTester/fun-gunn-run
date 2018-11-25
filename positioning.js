@@ -21,12 +21,30 @@ function flatify(x, y, z) {
   };
 }
 function calculate3D(paths, objects) {
-  camera.rot += 0.01;
-  camera.x = Math.sin(Date.now() / 100) * 100;
+  if (keys.left) camera.rot -= 0.05;
+  if (keys.right) camera.rot += 0.05;
 
   const sin = Math.sin(camera.rot),
   cos = Math.cos(camera.rot);
 
+  if (keys.jump) {
+    camera.x += sin * 5;
+    camera.z += cos * 5;
+  }
+  if (keys[40]) {
+    camera.x -= sin * 5;
+    camera.z -= cos * 5;
+  }
+
+  paths = paths.map(obj => {
+    const points = [[obj.x, obj.z], [obj.x + obj.width, obj.z],
+      [obj.x + obj.width, obj.z + obj.height], [obj.x, obj.z + obj.height]]
+      .map(([x, z]) => transform(camera, x, z, sin, cos));
+    if (points.find(({z}) => z < NEAR_PLANE))
+      return;
+    else
+      return points.map(({x, z}) => flatify(x, GROUND_Y, z));
+  }).filter(obj => obj);
   objects = objects.map(obj => {
     const transformation = transform(camera, obj.x, obj.z, sin, cos);
     if (transformation.z >= NEAR_PLANE) {
@@ -40,7 +58,7 @@ function calculate3D(paths, objects) {
   }).filter(obj => obj).sort((a, b) => b.distance - a.distance);
 
   return {
-    paths: [],
+    paths: paths,
     objects: objects
   };
 }

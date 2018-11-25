@@ -32,6 +32,15 @@ function paint() {
   const {paths, objects} = calculate3D([
     {x: 0, z: 0, width: 100, height: 100}
   ], sheep);
+  c.fillStyle = '#b0a47e';
+  paths.forEach(path => {
+    c.beginPath();
+    c.moveTo(path[0].x, path[0].y);
+    c.lineTo(path[1].x, path[1].y);
+    c.lineTo(path[2].x, path[2].y);
+    c.lineTo(path[3].x, path[3].y);
+    c.fill();
+  });
   objects.forEach(obj => {
     const img = images[obj.type];
     const width = obj.scale * img.width;

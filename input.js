@@ -19,6 +19,8 @@ document.addEventListener('keydown', e => {
     case 68:
       keys.right = true;
       break;
+    default:
+      keys[e.keyCode] = true;
   }
 });
 document.addEventListener('keyup', e => {
@@ -36,5 +38,7 @@ document.addEventListener('keyup', e => {
     case 68:
       keys.right = false;
       break;
+    default:
+      keys[e.keyCode] = false;
   }
 });
