@@ -5,4 +5,5 @@ html, body, canvas {
 body {
   margin: 0;
   font-size: 0;
+  background-image: radial-gradient(#d2eaec, #80a1a5);
 }

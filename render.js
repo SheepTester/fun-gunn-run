@@ -1,7 +1,12 @@
 const imageNames = [ // ./images/[NAME].svg
   'tree',
-  'sheep'
+  'sheep',
+  'player_temp',
+  'aplus'
 ];
+const customSizes = {
+  aplus: 20
+};
 const images = {};
 
 function loadImages() {
@@ -18,20 +23,24 @@ function drawIfInCanvas(img, x, y, width, height) {
     c.drawImage(img, x, y, width, height);
   }
 }
-const sheep = [
-  {type: 'tree', x: 0, z: 300},
-  {type: 'sheep', x: 0, z: -300},
-  {type: 'sheep', x: -300, z: 0},
-  {type: 'sheep', x: 300, z: 0}
-];
-for (let i = 0; i < 30; i++) {
-  sheep.push({type: 'tree', x: Math.random() * 700 - 350, z: Math.random() * 700 - 350});
-}
+const beginningPath = {x: -50, z: -500, width: 100, height: 500};
 function paint() {
+  movePlayer();
+
   c.clearRect(-cwidth / 2, -cheight / 2, cwidth, cheight);
-  const {paths, objects} = calculate3D([
-    {x: 0, z: 0, width: 100, height: 300}
-  ], sheep);
+  c.fillStyle = '#d0c49f';
+  c.fillRect(-cwidth / 2, 0, cwidth, cheight / 2);
+
+  const playerObject = {
+    type: 'player_temp',
+    x: player.x,
+    y: player.y,
+    z: player.z
+  };
+  const {paths, objects} = calculate3D(
+    [beginningPath, ...currentMap.paths, ...(nextMap || {paths: []}).paths],
+    [playerObject, ...currentMap.objects, ...(nextMap || {objects: []}).objects]
+  );
   c.fillStyle = '#b0a47e';
   paths.forEach(path => {
     c.beginPath();
@@ -41,8 +50,8 @@ function paint() {
   });
   objects.forEach(obj => {
     const img = images[obj.type];
-    const width = obj.scale * img.width;
-    const height = obj.scale * img.height;
+    const width = obj.scale * (customSizes[obj.type] || img.width);
+    const height = obj.scale * (customSizes[obj.type] || img.height); // support for diff. ratios?
     drawIfInCanvas(img, obj.x - width / 2, obj.y - height, width, height);
   });
 }

@@ -1,7 +1,8 @@
 const keys = {
   jump: false,
   left: false,
-  right: false
+  right: false,
+  ducking: false
 };
 
 document.addEventListener('keydown', e => {
@@ -18,6 +19,10 @@ document.addEventListener('keydown', e => {
     case 39:
     case 68:
       keys.right = true;
+      break;
+    case 40:
+    case 83:
+      keys.ducking = true;
       break;
     default:
       keys[e.keyCode] = true;
@@ -37,6 +42,10 @@ document.addEventListener('keyup', e => {
     case 39:
     case 68:
       keys.right = false;
+      break;
+    case 40:
+    case 83:
+      keys.ducking = false;
       break;
     default:
       keys[e.keyCode] = false;
