@@ -1,8 +1,39 @@
-const path = []; // TEMP
-const objects = [];
+const imageNames = [ // ./images/[NAME].svg
+  'tree',
+  'sheep'
+];
+const images = {};
 
+function loadImages() {
+  return Promise.all(imageNames.map(name => new Promise(res => {
+    const img = new Image();
+    img.onload = res;
+    img.src = `./images/${name}.svg`;
+    images[name] = img;
+  })));
+}
+function drawIfInCanvas(img, x, y, width, height) {
+  if (x < cwidth / 2 && -cwidth / 2 < x + width
+      && y < cheight / 2 && -cheight / 2 < y + height) {
+    c.drawImage(img, x, y, width, height);
+  }
+}
+const sheep = [
+  {type: 'tree', x: 0, z: 300},
+  {type: 'sheep', x: 0, z: -300},
+  {type: 'sheep', x: -300, z: 0},
+  {type: 'sheep', x: 300, z: 0}
+];
+for (let i = 0; i < 30; i++) {
+  sheep.push({type: 'tree', x: Math.random() * 700 - 350, z: Math.random() * 700 - 350});
+}
 function paint() {
-  const {path, objects} = calculate3D(path, objects);
-  c.fillStyle = 'rgba(0,0,0,0.01)';
-  c.fillRect(Math.sin(Date.now() / 70) * 50 + 75, Math.sin(Date.now() / 50) * 50 + 75, 100, 100);
+  c.clearRect(-cwidth / 2, -cheight / 2, cwidth, cheight);
+  const {paths, objects} = calculate3D([], sheep);
+  objects.forEach(obj => {
+    const img = images[obj.type];
+    const width = obj.scale * img.width;
+    const height = obj.scale * img.height;
+    drawIfInCanvas(img, obj.x - width / 2, obj.y - height, width, height);
+  });
 }
