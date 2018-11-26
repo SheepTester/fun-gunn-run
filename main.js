@@ -14,6 +14,7 @@ if (window.location.search) {
 
 let cwidth, cheight;
 let c;
+let mode = 'game';
 
 function init() {
   const canvas = document.getElementById('canvas');
@@ -35,10 +36,7 @@ function init() {
   let animID = null;
   function callPaint() {
     paint();
-    if (Date.now() > player.endDeathAnim && player.ccSteps >= 3) {
-      paused = true;
-    }
-    else animID = window.requestAnimationFrame(callPaint);
+    animID = window.requestAnimationFrame(callPaint);
   }
   document.addEventListener('keydown', e => {
     if (e.keyCode === 80) {

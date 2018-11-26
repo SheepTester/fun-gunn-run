@@ -32,15 +32,12 @@ function getItem(arr, index) {
   const length = arr.length;
   return (index + length) % length;
 }
-function calculate3D(paths, objects) {
-  camera.rot += (cameraRotDest - camera.rot) / 5;
-  GROUND_Y += (groundYDest - GROUND_Y) / 5;
-  cameraDist += (cameraDistDest - cameraDist) / 5;
+function calculate3D(paths, objects, focusX, focusZ) {
   const sin = Math.sin(camera.rot),
   cos = Math.cos(camera.rot);
 
-  camera.x = objects[0].x - sin * cameraDist;
-  camera.z = objects[0].z - cos * cameraDist;
+  camera.x = focusX - sin * cameraDist;
+  camera.z = focusZ - cos * cameraDist;
 
   paths = paths.map(obj => {
     const points = [[obj.x, obj.z], [obj.x + obj.width, obj.z],
