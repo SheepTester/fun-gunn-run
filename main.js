@@ -35,7 +35,10 @@ function init() {
   let animID = null;
   function callPaint() {
     paint();
-    animID = window.requestAnimationFrame(callPaint);
+    if (Date.now() > player.endDeathAnim && player.ccSteps >= 3) {
+      paused = true;
+    }
+    else animID = window.requestAnimationFrame(callPaint);
   }
   document.addEventListener('keydown', e => {
     if (e.keyCode === 80) {

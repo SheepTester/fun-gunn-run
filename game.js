@@ -21,15 +21,11 @@ function movePlayer() {
     const now = Date.now();
     const cc = currentMap.objects[currentMap.objects.length - 1];
     cc.z += (player.ccZDest - cc.z) / 3;
-    if (now > player.endDeathAnim) {
-      if (player.ccSteps < 3) {
-        player.ccSteps++;
-        shakeRadius = player.ccSteps * 10;
-        player.ccZDest += 100;
-        player.endDeathAnim = now + 1000;
-      } else {
-        //
-      }
+    if (now > player.endDeathAnim && player.ccSteps < 3) {
+      player.ccSteps++;
+      shakeRadius = player.ccSteps * 10;
+      player.ccZDest += 100;
+      player.endDeathAnim = now + 1000;
     }
     return;
   } else if (player.dead) {
