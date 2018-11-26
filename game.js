@@ -3,7 +3,7 @@ const CHUNK_SIZE = 2500;
 const player = {
   x: 0, y: GROUND_Y, z: 0, yv: null, zv: null, speed: 5,
   invincible: false,
-  dead: false, seeCC: false, endDeathAnim: null
+  dead: false, seeCC: false, endDeathAnim: null, ccSteps: 0, ccZDest: null
 };
 
 function die() {
@@ -16,7 +16,21 @@ function die() {
 
 function movePlayer() {
   if (player.seeCC) {
+    shakeRadius *= 0.9;
     player.y = GROUND_Y;
+    const now = Date.now();
+    const cc = currentMap.objects[currentMap.objects.length - 1];
+    cc.z += (player.ccZDest - cc.z) / 3;
+    if (now > player.endDeathAnim) {
+      if (player.ccSteps < 3) {
+        player.ccSteps++;
+        shakeRadius = player.ccSteps * 10;
+        player.ccZDest += 100;
+        player.endDeathAnim = now + 1000;
+      } else {
+        //
+      }
+    }
     return;
   } else if (player.dead) {
     shakeRadius *= 0.9;
@@ -39,6 +53,8 @@ function movePlayer() {
       groundYDest = 60;
       cameraDistDest = 50;
       currentMap.objects.push({type: 'curlymango', x: 0, z: player.z - 300});
+      player.ccZDest = player.z - 300;
+      player.endDeathAnim = Date.now() + 1500;
     }
     return;
   }

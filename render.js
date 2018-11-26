@@ -12,7 +12,7 @@ const imageNames = [ // ./images/[NAME].svg
   'curlymango'
 ];
 const customSizes = {
-  aplus: 20
+  aplus: [20, 20]
 };
 const images = {};
 
@@ -61,8 +61,8 @@ function paint() {
   });
   objects.forEach(obj => {
     const img = images[obj.type];
-    const width = obj.scale * (customSizes[obj.type] || img.width);
-    const height = obj.scale * (customSizes[obj.type] || img.height); // support for diff. ratios?
+    const width = obj.scale * (customSizes[obj.type] ? customSizes[obj.type][0] : img.width);
+    const height = obj.scale * (customSizes[obj.type] ? customSizes[obj.type][1] : img.height); // support for diff. ratios?
     drawIfInCanvas(img, obj.x - width / 2 + shakeX, obj.y - height + shakeY, width, height);
   });
 }
