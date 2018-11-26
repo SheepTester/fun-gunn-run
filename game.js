@@ -1,12 +1,36 @@
 const CHUNK_SIZE = 2500;
 
-const player = {x: 0, y: GROUND_Y, z: 0, yv: null, speed: 5};
+const player = {x: 0, y: GROUND_Y, z: 0, yv: null, zv: null, speed: 5, invincible: false, dead: false};
+
+function die() {
+  player.die = true;
+  player.zv = -5;
+  player.ducking = false;
+}
 
 function movePlayer() {
+  if (player.die) {
+    if (player.yv !== null) {
+      player.y += player.yv;
+      player.yv += 0.5;
+      player.z += player.zv;
+      if (player.y > GROUND_Y) {
+        player.y = GROUND_Y;
+        player.yv = null;
+      }
+    } else {
+      player.z += player.zv;
+      player.zv *= 0.9;
+    }
+    return;
+  }
   if (player.yv === null && keys.jump) {
     player.yv = -8;
   }
   if (player.yv !== null) {
+    if (keys.ducking) {
+      player.yv += 1;
+    }
     player.y += player.yv;
     player.yv += 0.5;
     if (player.y > GROUND_Y) {
@@ -31,7 +55,13 @@ function movePlayer() {
   }
   if (currentMap.branches !== null) {
     if (player.z > currentMap.branches + 100) {
-      throw new Error('Death');
+      if (!player.invincible) die();
+      else {
+        player.z = 0;
+        currentMap = nextMap = null;
+        updateMap(true);
+        camera.rot = Math.PI * 4;
+      }
     } else if (player.z > currentMap.branches) {
       if (keys.left && !keys.right || !keys.left && keys.right) {
         player.z = 0;
@@ -51,27 +81,27 @@ function movePlayer() {
         break;
       case 'caterpillar_tree':
         if (!player.ducking) {
-          throw new Error('Death');
+          if (!player.invincible) die();
         }
         break;
       case 'trash_cart':
-        if (player.yv === null) {
-          throw new Error('Death');
+        if (player.y > 20) {
+          if (!player.invincible) die();
         }
         break;
       case 'construction_fence':
         if (obj.x < 0 && player.x <= 0 || obj.x > 0 && player.x >= 0) {
-          throw new Error('Death');
+          if (!player.invincible) die();
         }
         break;
       case 'backpack':
-        if ((obj.x < 0 && player.x <= 0 || obj.x > 0 && player.x >= 0) && player.yv === null) {
+        if ((obj.x < 0 && player.x <= 0 || obj.x > 0 && player.x >= 0) && player.y > 50) {
           console.log('warning');
         }
         break;
     }
   });
-  player.speed += 0.1;
+  player.speed += 0.01;
 }
 
 const coinPositions = [-35, 0, 35];
@@ -88,7 +118,10 @@ function updateMap(justTurned = false) {
       obj.z -= CHUNK_SIZE;
     });
   } else if (currentMap) {
-    throw new Error('Death');
+    if (!player.invincible) die();
+    else {
+      currentMap = generateMap(0, true);
+    }
   } else {
     currentMap = generateMap(0, true);
   }
@@ -115,7 +148,7 @@ function generateMap(zOffset, justTurned = false) {
     map.objects.push({type: 'hailself', x: 0, z: map.branches + zOffset + 100})
     end = map.branches;
   }
-  for (let z = justTurned ? 500 : 0; z < end - 300; z += Math.random() * 500 + 250) {
+  for (let z = justTurned ? 800 : 0; z < end - 300; z += Math.random() * 500 + 300) {
     const left = Math.random() < 0.5;
     switch (Math.floor(Math.random() * 6)) {
       case 0:
