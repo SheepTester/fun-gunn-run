@@ -3,7 +3,12 @@ const imageNames = [ // ./images/[NAME].svg
   'sheep',
   'player_temp',
   'aplus',
-  'hailself'
+  'hailself',
+  'caterpillar_tree',
+  'trash_cart',
+  'construction_fence',
+  'backpack',
+  'player_ducking'
 ];
 const customSizes = {
   aplus: 20
@@ -33,7 +38,7 @@ function paint() {
   c.fillRect(-cwidth / 2, 0, cwidth, cheight / 2);
 
   const playerObject = {
-    type: 'player_temp',
+    type: player.ducking ? 'player_ducking' : 'player_temp',
     x: player.x,
     y: player.y,
     z: player.z

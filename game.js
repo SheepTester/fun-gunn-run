@@ -4,7 +4,7 @@ const player = {x: 0, y: GROUND_Y, z: 0, yv: null, speed: 5};
 
 function movePlayer() {
   if (player.yv === null && keys.jump) {
-    player.yv = -7.5;
+    player.yv = -8;
   }
   if (player.yv !== null) {
     player.y += player.yv;
@@ -13,6 +13,9 @@ function movePlayer() {
       player.y = GROUND_Y;
       player.yv = null;
     }
+    player.ducking = false;
+  } else {
+    player.ducking = keys.ducking;
   }
   if (keys.left && !keys.right) {
     player.x += (-30 - player.x) / 5;
@@ -30,34 +33,52 @@ function movePlayer() {
     if (player.z > currentMap.branches + 100) {
       throw new Error('Death');
     } else if (player.z > currentMap.branches) {
-      if (keys.left && !keys.right) {
+      if (keys.left && !keys.right || !keys.left && keys.right) {
         player.z = 0;
         currentMap = nextMap = null;
-        updateMap();
-        camera.rot = Math.PI / 2;
-      } else if (!keys.left && keys.right) {
-        player.z = 0;
-        currentMap = nextMap = null;
-        updateMap();
-        camera.rot = -Math.PI / 2;
+        updateMap(true);
+        camera.rot = keys.left ? Math.PI / 2 : -Math.PI / 2;
       }
     }
   }
   currentMap.objects.filter(({z}) => player.z - 10 < z && z < player.z + 10).forEach(obj => {
-    if (obj.type === 'aplus') {
-      if (player.x - 10 < obj.x && obj.x < player.x + 10 && player.y - 10 < obj.y && obj.y < player.y + 10) {
-        const index = currentMap.objects.indexOf(obj);
-        if (~index) currentMap.objects.splice(index, 1);
-      }
+    switch (obj.type) {
+      case 'aplus':
+        if (player.x - 10 < obj.x && obj.x < player.x + 10 && player.y - 10 < obj.y && obj.y < player.y + 10) {
+          const index = currentMap.objects.indexOf(obj);
+          if (~index) currentMap.objects.splice(index, 1);
+        }
+        break;
+      case 'caterpillar_tree':
+        if (!player.ducking) {
+          throw new Error('Death');
+        }
+        break;
+      case 'trash_cart':
+        if (player.yv === null) {
+          throw new Error('Death');
+        }
+        break;
+      case 'construction_fence':
+        if (obj.x < 0 && player.x <= 0 || obj.x > 0 && player.x >= 0) {
+          throw new Error('Death');
+        }
+        break;
+      case 'backpack':
+        if ((obj.x < 0 && player.x <= 0 || obj.x > 0 && player.x >= 0) && player.yv === null) {
+          console.log('warning');
+        }
+        break;
     }
   });
+  player.speed += 0.1;
 }
 
 const coinPositions = [-35, 0, 35];
 let currentMap;
 let nextMap = null;
 updateMap();
-function updateMap() {
+function updateMap(justTurned = false) {
   if (nextMap) {
     currentMap = nextMap;
     currentMap.paths.forEach(obj => {
@@ -69,21 +90,21 @@ function updateMap() {
   } else if (currentMap) {
     throw new Error('Death');
   } else {
-    currentMap = generateMap(0);
+    currentMap = generateMap(0, true);
   }
   if (currentMap.branches === null) {
-    nextMap = generateMap(CHUNK_SIZE);
+    nextMap = generateMap(CHUNK_SIZE, justTurned);
   } else {
     nextMap = null;
   }
 }
-function generateMap(zOffset) {
+function generateMap(zOffset, justTurned = false) {
   const map = {
     paths: [],
     objects: []
   };
   let end;
-  if (Math.random() < 0.5) {
+  if (Math.random() < 0.5 || justTurned) {
     map.branches = null;
     map.paths.push({x: -50, z: zOffset, width: 100, height: CHUNK_SIZE});
     end = CHUNK_SIZE;
@@ -94,12 +115,27 @@ function generateMap(zOffset) {
     map.objects.push({type: 'hailself', x: 0, z: map.branches + zOffset + 100})
     end = map.branches;
   }
-  for (let z = 0; z < end - 300; z += Math.random() * 500 + 250) {
+  for (let z = justTurned ? 500 : 0; z < end - 300; z += Math.random() * 500 + 250) {
     const left = Math.random() < 0.5;
-    map.objects.push({type: 'tree', x: left ? -75 : 75, z: z + zOffset});
+    switch (Math.floor(Math.random() * 6)) {
+      case 0:
+        map.objects.push({type: 'caterpillar_tree', x: 30, z: z + zOffset});
+        break;
+      case 1:
+        map.objects.push({type: 'trash_cart', x: 0, z: z + zOffset});
+        break;
+      case 2:
+        map.objects.push({type: 'construction_fence', x: left ? -55 : 55, z: z + zOffset});
+        break;
+      case 3:
+        map.objects.push({type: 'backpack', x: left ? -30 : 30, z: z + zOffset});
+        break;
+      default:
+        map.objects.push({type: 'tree', x: left ? -75 : 75, z: z + zOffset});
+    }
   }
   let coinStringStop = -1, coinMode;
-  for (let z = 0; z < end - 100; z += 75) {
+  for (let z = justTurned ? 300 : 0; z < end - 100; z += 75) {
     if (z > coinStringStop) {
       coinStringStop = z + Math.random() * 300 + 200;
       coinMode = Math.floor(Math.random() * 5);
