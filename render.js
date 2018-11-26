@@ -16,18 +16,37 @@ const customSizes = {
 };
 const images = {};
 
+const masterSVG = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+const master = new Image();
 function loadImages() {
   return Promise.all(imageNames.map(name => new Promise(res => {
     const img = new Image();
     img.onload = res;
     img.src = `./images/${name}.svg`;
-    images[name] = img;
-  })));
+    images[name] = {image: img};
+  }))).then(() => new Promise(res => {
+    let y = 0, maxWidth = 0;
+    imageNames.forEach(name => {
+      const image = document.createElementNS('http://www.w3.org/2000/svg', 'image');
+      image.setAttributeNS(null, 'x', 0);
+      image.setAttributeNS(null, 'y', images[name].y = y);
+      image.setAttributeNS(null, 'width', images[name].width = images[name].image.width);
+      image.setAttributeNS(null, 'height', images[name].height = images[name].image.height);
+      image.setAttributeNS('http://www.w3.org/1999/xlink', 'href', `./images/${name}.svg`);
+      if (maxWidth < images[name].image.width) maxWidth = images[name].image.width;
+      y += images[name].image.height;
+      masterSVG.appendChild(image);
+    });
+    masterSVG.setAttributeNS(null, 'width', maxWidth);
+    masterSVG.setAttributeNS(null, 'height', y);
+    master.onload = res;
+    master.src = 'data:image/svg+xml;base64,' + btoa(new XMLSerializer().serializeToString(masterSVG));
+  }));
 }
 function drawIfInCanvas(img, x, y, width, height) {
   if (x < cwidth / 2 && -cwidth / 2 < x + width
       && y < cheight / 2 && -cheight / 2 < y + height) {
-    c.drawImage(img, x, y, width, height);
+    c.drawImage(master, 0, img.y, img.width, img.height, x, y, width, height);
   }
 }
 const beginningPath = {x: -50, z: -500, width: 100, height: 500};
