@@ -1,17 +1,30 @@
 const CHUNK_SIZE = 2500;
 
-const player = {x: 0, y: GROUND_Y, z: 0, yv: null, speed: 5};
+const JUMP_DISTANCE = 200;
+const JUMP_HEIGHT = -70;
+
+const player = {x: 0, y: GROUND_Y, z: 0, jumping: false, speed: 5};
 
 function movePlayer() {
-  if (player.yv === null && keys.jump) {
-    player.yv = -8;
+  if (!player.jumping && keys.jump) {
+    const now = Date.now();
+    const halfTime = JUMP_DISTANCE / 2 / player.speed * (1000 / 60);
+    player.jumping = {
+      startTime: now,
+      endTime: halfTime * 2,
+      gravity: -JUMP_HEIGHT / (halfTime * halfTime),
+      initVel: 2 * JUMP_HEIGHT / halfTime,
+      startZ: player.z
+    };
   }
-  if (player.yv !== null) {
-    player.y += player.yv;
-    player.yv += 0.5;
-    if (player.y > GROUND_Y) {
+  if (player.jumping) {
+    const time = Date.now() - player.jumping.startTime;
+    if (time > player.jumping.endTime) {
       player.y = GROUND_Y;
-      player.yv = null;
+      console.log(player.z - player.jumping.startZ);
+      player.jumping = false;
+    } else {
+      player.y = player.jumping.gravity * time * time + player.jumping.initVel * time + GROUND_Y;
     }
     player.ducking = false;
   } else {
@@ -55,23 +68,23 @@ function movePlayer() {
         }
         break;
       case 'trash_cart':
-        if (player.yv === null) {
+        if (!player.jumping) {
           throw new Error('Death');
         }
         break;
       case 'construction_fence':
-        if (obj.x < 0 && player.x <= 0 || obj.x > 0 && player.x >= 0) {
+        if (obj.x < 0 && player.x <= 10 || obj.x > 0 && player.x >= -10) {
           throw new Error('Death');
         }
         break;
       case 'backpack':
-        if ((obj.x < 0 && player.x <= 0 || obj.x > 0 && player.x >= 0) && player.yv === null) {
+        if ((obj.x < 0 && player.x <= 10 || obj.x > 0 && player.x >= -10) && !player.jumping) {
           console.log('warning');
         }
         break;
     }
   });
-  player.speed += 0.1;
+  player.speed += 0.01;
 }
 
 const coinPositions = [-35, 0, 35];
