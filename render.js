@@ -8,7 +8,8 @@ const imageNames = [ // ./images/[NAME].svg
   'trash_cart',
   'construction_fence',
   'backpack',
-  'player_ducking'
+  'player_ducking',
+  'curlymango'
 ];
 const customSizes = {
   aplus: 20
@@ -30,12 +31,16 @@ function drawIfInCanvas(img, x, y, width, height) {
   }
 }
 const beginningPath = {x: -50, z: -500, width: 100, height: 500};
+let shakeRadius = 0;
 function paint() {
   movePlayer();
 
+  const shakeX = Math.random() * shakeRadius * 2 - shakeRadius;
+  const shakeY = Math.random() * shakeRadius * 2 - shakeRadius;
+
   c.clearRect(-cwidth / 2, -cheight / 2, cwidth, cheight);
   c.fillStyle = '#d0c49f';
-  c.fillRect(-cwidth / 2, 0, cwidth, cheight / 2);
+  c.fillRect(-cwidth / 2, shakeY, cwidth, cheight / 2 - shakeY);
 
   const playerObject = {
     type: player.ducking ? 'player_ducking' : 'player_temp',
@@ -50,14 +55,14 @@ function paint() {
   c.fillStyle = '#b0a47e';
   paths.forEach(path => {
     c.beginPath();
-    c.moveTo(path[0].x, path[0].y);
-    path.slice(1).forEach(({x, y}) => c.lineTo(x, y))
+    c.moveTo(path[0].x + shakeX, path[0].y + shakeY);
+    path.slice(1).forEach(({x, y}) => c.lineTo(x + shakeX, y + shakeY))
     c.fill();
   });
   objects.forEach(obj => {
     const img = images[obj.type];
     const width = obj.scale * (customSizes[obj.type] || img.width);
     const height = obj.scale * (customSizes[obj.type] || img.height); // support for diff. ratios?
-    drawIfInCanvas(img, obj.x - width / 2, obj.y - height, width, height);
+    drawIfInCanvas(img, obj.x - width / 2 + shakeX, obj.y - height + shakeY, width, height);
   });
 }

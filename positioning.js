@@ -1,9 +1,14 @@
 const NEAR_PLANE = 10;
 const VIEW_FACTOR = 500;
 
-const GROUND_Y = 75;
+let GROUND_Y = 75; // used to be a constant lol
+let groundYDest = GROUND_Y;
 
 const camera = {x: 0, z: 0, rot: 0};
+let cameraRotDest = 0;
+
+let cameraDist = 200;
+let cameraDistDest = cameraDist;
 
 function transform(camera, x, z, sin, cos) {
   const relX = x - camera.x,
@@ -28,12 +33,14 @@ function getItem(arr, index) {
   return (index + length) % length;
 }
 function calculate3D(paths, objects) {
-  camera.rot += -camera.rot / 5;
+  camera.rot += (cameraRotDest - camera.rot) / 5;
+  GROUND_Y += (groundYDest - GROUND_Y) / 5;
+  cameraDist += (cameraDistDest - cameraDist) / 5;
   const sin = Math.sin(camera.rot),
   cos = Math.cos(camera.rot);
 
-  camera.x = objects[0].x - sin * 200;
-  camera.z = objects[0].z - cos * 200;
+  camera.x = objects[0].x - sin * cameraDist;
+  camera.z = objects[0].z - cos * cameraDist;
 
   paths = paths.map(obj => {
     const points = [[obj.x, obj.z], [obj.x + obj.width, obj.z],
