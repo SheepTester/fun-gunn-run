@@ -1,10 +1,6 @@
 const CHUNK_SIZE = 2500;
 
-const player = {
-  x: 0, y: GROUND_Y, z: 0, yv: null, zv: null, speed: 5,
-  invincible: false,
-  dead: false, seeCC: false, endDeathAnim: null, ccSteps: 0, ccZDest: null
-};
+let player;
 
 function die() {
   player.dead = true;
@@ -132,12 +128,21 @@ function movePlayer() {
     }
   });
   player.speed += 0.01;
+  player.score++;
 }
 
 const coinPositions = [-35, 0, 35];
-let currentMap;
-let nextMap = null;
-updateMap();
+let currentMap, nextMap;
+function reset() {
+  player = {
+    x: 0, y: GROUND_Y, z: 0, yv: null, zv: null, speed: 5,
+    invincible: false,
+    dead: false, seeCC: false, endDeathAnim: null, ccSteps: 0, ccZDest: null,
+    score: 0
+  };
+  currentMap = nextMap = null;
+  updateMap();
+}
 function updateMap(justTurned = false) {
   if (nextMap) {
     currentMap = nextMap;

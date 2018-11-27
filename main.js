@@ -14,7 +14,17 @@ if (window.location.search) {
 
 let cwidth, cheight;
 let c;
-let mode = 'game';
+let mode;
+
+function setMode(newMode) {
+  document.querySelectorAll(`#${mode} button`).forEach(btn => {
+    btn.disabled = true;
+  });
+  document.body.className = mode = newMode;
+  document.querySelectorAll(`#${newMode} button`).forEach(btn => {
+    btn.disabled = false;
+  });
+}
 
 function init() {
   const canvas = document.getElementById('canvas');
@@ -32,10 +42,18 @@ function init() {
   resize();
   window.addEventListener('resize', resize);
 
+  const score = document.getElementById('score');
+
   let paused = false;
   let animID = null;
   function callPaint() {
-    paint();
+    const returnVal = paint();
+    if (returnVal) {
+      setMode('play-again');
+      GROUND_Y = groundYDest = 40;
+      shakeRadius = 0;
+      score.textContent = player.score;
+    }
     animID = window.requestAnimationFrame(callPaint);
   }
   document.addEventListener('keydown', e => {
@@ -46,6 +64,24 @@ function init() {
     }
   });
   loadImages().then(callPaint);
+
+  function startGame() {
+    setMode('game');
+    resetCamera();
+    reset();
+  }
+  document.getElementById('play').addEventListener('click', e => {
+    startGame();
+  });
+  document.getElementById('play').addEventListener('click', e => {
+    startGame();
+  });
+  document.getElementById('menu-btn').addEventListener('click', e => {
+    setMode('menu');
+  });
+
+  Array.from(document.getElementsByTagName('button')).forEach(btn => btn.disabled = true);
+  setMode('menu');
 }
 
 document.addEventListener('DOMContentLoaded', init, {once: true});

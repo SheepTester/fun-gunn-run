@@ -1,14 +1,19 @@
 const NEAR_PLANE = 10;
 const VIEW_FACTOR = 500;
 
-let GROUND_Y = 75; // used to be a constant lol
-let groundYDest = GROUND_Y;
+let GROUND_Y, groundYDest;
 
 const camera = {x: 0, z: 0, rot: 0};
-let cameraRotDest = 0;
+let cameraRotDest;
 
-let cameraDist = 200;
-let cameraDistDest = cameraDist;
+let cameraDist, cameraDistDest;
+
+function resetCamera() {
+  cameraDistDest = cameraDist = 200;
+  camera.x = camera.z = 0;
+  cameraRotDest = camera.rot = 0;
+  groundYDest = GROUND_Y = 75;
+}
 
 function transform(camera, x, z, sin, cos) {
   const relX = x - camera.x,

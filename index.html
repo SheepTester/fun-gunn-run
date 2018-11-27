@@ -8,13 +8,26 @@
     <!-- <link rel="stylesheet" type="text/css" href="../sheep2.css">
     <script src="../sheep2.js" charset="utf-8"></script> -->
     <link rel="stylesheet" href="./styles.css">
+    <link href="https://fonts.googleapis.com/css?family=Montserrat" rel="stylesheet">
     <script src="./input.js" charset="utf-8"></script>
     <script src="./render.js" charset="utf-8"></script>
     <script src="./positioning.js" charset="utf-8"></script>
     <script src="./game.js" charset="utf-8"></script>
     <script src="./main.js" charset="utf-8"></script>
   </head>
-  <body>
+  <body class="menu">
     <canvas id="canvas"></canvas>
+    <div class="container" id="menu">
+      <img src="./images/dumb-logo.svg" alt="&quot;Fun&quot; Gunn Run - SELF escapee training" class="game-title">
+      <button class="btn menu-btn" id="play">play</button>
+      <button class="btn menu-btn disabled">options</button>
+      <button class="btn menu-btn disabled">about</button>
+    </div>
+    <div class="container" id="play-again">
+      <p class="score-label">score</p>
+      <p id="score">0</p>
+      <button class="btn menu-btn" id="play-again-btn">fail again</button>
+      <button class="btn menu-btn" id="menu-btn">menu</button>
+    </div>
   </body>
 </html>
