@@ -73,7 +73,7 @@ function init() {
   document.getElementById('play').addEventListener('click', e => {
     startGame();
   });
-  document.getElementById('play').addEventListener('click', e => {
+  document.getElementById('play-again-btn').addEventListener('click', e => {
     startGame();
   });
   document.getElementById('menu-btn').addEventListener('click', e => {

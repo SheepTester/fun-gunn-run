@@ -57,7 +57,7 @@ function paint() {
       [playerObject, ...currentMap.objects, ...(nextMap || {objects: []}).objects],
       playerObject.x, playerObject.z
     ));
-  } else if (mode === 'menu') {
+  } else if (mode === 'menu' || mode === 'play-again') { // TODO: replace play-again with CC animation
     camera.rot += 0.005;
     if (now > menu.nextRefocus) {
       menu.nextRefocus = now + 5000;

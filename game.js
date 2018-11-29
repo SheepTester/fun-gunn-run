@@ -11,10 +11,10 @@ function die() {
 }
 
 function movePlayer() {
+  const now = Date.now();
+  shakeRadius *= 0.9;
   if (player.seeCC) {
-    shakeRadius *= 0.9;
     player.y = GROUND_Y;
-    const now = Date.now();
     const cc = currentMap.objects[currentMap.objects.length - 1];
     cc.z += (player.ccZDest - cc.z) / 3;
     if (now > player.endDeathAnim && player.ccSteps < 3) {
@@ -25,7 +25,6 @@ function movePlayer() {
     }
     return;
   } else if (player.dead) {
-    shakeRadius *= 0.9;
     if (player.yv !== null) {
       player.y += player.yv;
       player.yv += 0.5;
@@ -38,7 +37,7 @@ function movePlayer() {
       player.z += player.zv;
       player.zv *= 0.9;
     }
-    if (shakeRadius < 1 && Math.abs(player.zv) < 1 && Date.now() > player.endDeathAnim) {
+    if (shakeRadius < 1 && Math.abs(player.zv) < 1 && now > player.endDeathAnim) {
       player.seeCC = true;
       shakeRadius = 0;
       cameraRotDest = Math.PI;
@@ -46,7 +45,7 @@ function movePlayer() {
       cameraDistDest = 50;
       currentMap.objects.push({type: 'curlymango', x: 0, z: player.z - 300});
       player.ccZDest = player.z - 300;
-      player.endDeathAnim = Date.now() + 1500;
+      player.endDeathAnim = now + 1500;
     }
     return;
   }
@@ -74,7 +73,12 @@ function movePlayer() {
   } else {
     player.x += -player.x / 5;
   }
-  player.z += player.speed;
+  if (player.lastWhoopsie !== null && now < player.lastWhoopsie + 5000) {
+    player.z += 0.5 * player.speed; // TODO: add CC catching up animation
+  } else {
+    player.z += player.speed;
+    player.lastWhoopsie = null;
+  }
   if (player.z > CHUNK_SIZE) {
     player.z -= CHUNK_SIZE;
     updateMap();
@@ -97,7 +101,9 @@ function movePlayer() {
       }
     }
   }
-  currentMap.objects.filter(({z}) => player.z - 10 < z && z < player.z + 10).forEach(obj => {
+  currentMap.objects.filter(({z}) => z < player.z + 10).forEach(obj => {
+    if (obj.hit) return;
+    obj.hit = true;
     switch (obj.type) {
       case 'aplus':
         if (player.x - 10 < obj.x && obj.x < player.x + 10 && player.y - 10 < obj.y && obj.y < player.y + 10) {
@@ -116,13 +122,19 @@ function movePlayer() {
         }
         break;
       case 'construction_fence':
-        if (obj.x < 0 && player.x <= 0 || obj.x > 0 && player.x >= 0) {
+        if (obj.x < 0 && player.x < 10 || obj.x > 0 && player.x > -10) {
           if (!player.invincible) die();
         }
         break;
       case 'backpack':
-        if ((obj.x < 0 && player.x <= 0 || obj.x > 0 && player.x >= 0) && player.y > 50) {
-          console.log('warning');
+        if ((obj.x < 0 && player.x < 25 || obj.x > 0 && player.x > -25) && player.y > 50) {
+          if (!player.invincible) {
+            if (player.lastWhoopsie === null || now > player.lastWhoopsie + 5000) {
+              player.lastWhoopsie = now;
+            } else {
+              die();
+            }
+          }
         }
         break;
     }
@@ -136,6 +148,7 @@ let currentMap, nextMap;
 function reset() {
   player = {
     x: 0, y: GROUND_Y, z: 0, yv: null, zv: null, speed: 5,
+    lastWhoopsie: null,
     invincible: false,
     dead: false, seeCC: false, endDeathAnim: null, ccSteps: 0, ccZDest: null,
     score: 0
