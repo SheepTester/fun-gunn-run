@@ -68,11 +68,18 @@ function init() {
   let animID = null;
   function callPaint() {
     const returnVal = paint();
-    if (returnVal) {
-      setMode('play-again');
-      GROUND_Y = groundYDest = 40;
-      shakeRadius = 0;
-      score.textContent = player.score;
+    switch (returnVal) {
+      case 'menu':
+        setMode('play-again');
+        GROUND_Y = groundYDest = 40;
+        shakeRadius = 0;
+        score.textContent = player.score;
+        break;
+      case 'game':
+        shakeRadius = 0;
+        startGame();
+        paint();
+        break;
     }
     animID = window.requestAnimationFrame(callPaint);
   }

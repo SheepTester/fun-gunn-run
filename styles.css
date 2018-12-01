@@ -42,7 +42,7 @@ body {
   text-align: center;
 }
 .game-title {
-  font-size: 20px;
+  font-size: 40px;
   color: #b72020;
   text-shadow: 0 0 20px rgba(203, 70, 70, 1), 0 0 5px rgba(203, 70, 70, 0.5);
   width: 100%;

@@ -24,6 +24,9 @@ document.addEventListener('keydown', e => {
     case 83:
       keys.ducking = true;
       break;
+    case 27:
+      keys.skip = true;
+      break;
     default:
       keys[e.keyCode] = true;
   }
@@ -46,6 +49,9 @@ document.addEventListener('keyup', e => {
     case 40:
     case 83:
       keys.ducking = false;
+      break;
+    case 27:
+      keys.skip = false;
       break;
     default:
       keys[e.keyCode] = false;

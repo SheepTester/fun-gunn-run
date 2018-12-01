@@ -85,7 +85,7 @@ function paint() {
 
   if (mode === 'game') {
     movePlayer();
-    if (now > player.endDeathAnim && player.ccSteps >= 3) {
+    if (player.dead && keys.skip || now > player.endDeathAnim && player.ccSteps >= 3) {
       return 'menu';
     }
     const playerObject = {
@@ -122,7 +122,7 @@ function paint() {
       [playerObject, !player.seeCC && curlymangoBack, ...currentMap.objects, ...(nextMap || {objects: []}).objects],
       playerObject.x, playerObject.z
     ));
-  } else if (mode === 'menu') {
+  } else if (mode.slice(0, 4) === 'menu') {
     camera.rot += 0.005;
     if (now > menu.nextRefocus) {
       menu.nextRefocus = now + 5000;
@@ -139,6 +139,9 @@ function paint() {
     camera.rot = Math.PI + Math.sin(now / 700) / 20;
     ({paths, objects} = calculate3D(playAgain.paths, playAgain.objects, 0, 0));
   } else if (mode === 'intro') {
+    if (keys.skip) {
+      return 'game';
+    }
     const progress = now - intro.startTime;
     if (progress < intro.times.zoomToV1) {
       cameraDist -= 0.5;
@@ -162,10 +165,7 @@ function paint() {
       cameraDist -= 0.5;
       shakeRadius += 0.1;
     } else {
-      shakeRadius = 0;
-      startGame();
-      paint();
-      return;
+      return 'game';
     }
     ({paths, objects} = calculate3D(intro.paths, Object.values(intro.objects), intro.focusX, intro.focusZ));
   } else {
