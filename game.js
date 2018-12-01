@@ -74,7 +74,7 @@ function movePlayer() {
     player.x += -player.x / 5;
   }
   if (player.lastWhoopsie !== null && now < player.lastWhoopsie + 5000) {
-    player.z += 0.5 * player.speed; // TODO: add CC catching up animation
+    player.z += 0.5 * player.speed;
   } else {
     player.z += player.speed;
     player.lastWhoopsie = null;
@@ -151,7 +151,8 @@ function reset() {
     lastWhoopsie: null,
     invincible: false,
     dead: false, seeCC: false, endDeathAnim: null, ccSteps: 0, ccZDest: null,
-    score: 0
+    score: 0,
+    ccFallingState: 0
   };
   currentMap = nextMap = null;
   updateMap();

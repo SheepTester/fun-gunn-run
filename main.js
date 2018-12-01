@@ -25,6 +25,26 @@ function setMode(newMode) {
     btn.disabled = false;
   });
 }
+function startGameIntro() {
+  if (params.skipIntro) return startGame();
+  setMode('intro');
+  cameraDist = 350;
+  camera.rot = 0;
+  GROUND_Y = 50;
+  intro.startTime = Date.now();
+  intro.lastTime = null;
+  intro.objects.student.x = 75;
+  intro.objects.student.z = 1;
+  intro.focusX = intro.focusZ = 0;
+}
+function startGame() {
+  setMode('game');
+  resetCamera();
+  reset();
+  curlymangoBack.y = -500;
+  curlymangoBack.yv = 0;
+  curlymangoBack.proximity = 1;
+}
 
 function init() {
   const canvas = document.getElementById('canvas');
@@ -65,16 +85,11 @@ function init() {
   });
   loadImages().then(callPaint);
 
-  function startGame() {
-    setMode('game');
-    resetCamera();
-    reset();
-  }
   document.getElementById('play').addEventListener('click', e => {
-    startGame();
+    startGameIntro();
   });
   document.getElementById('play-again-btn').addEventListener('click', e => {
-    startGame();
+    startGameIntro();
   });
   document.getElementById('menu-btn').addEventListener('click', e => {
     setMode('menu');

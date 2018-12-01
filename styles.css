@@ -8,6 +8,22 @@ body {
   background-image: radial-gradient(#d2eaec, #80a1a5);
   font-family: 'Montserrat', sans-serif;
 }
+.ground {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  height: 50%;
+  width: 100%;
+  z-index: -1;
+  background-color: #d0c49f;
+}
+.play-again {
+  background-color: #e1e1e1;
+  background-image: none;
+}
+.play-again .ground {
+  background-color: #988d74;
+}
 
 .menu #menu, .play-again #play-again {
   display: flex;

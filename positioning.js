@@ -1,5 +1,6 @@
 const NEAR_PLANE = 10;
 const VIEW_FACTOR = 500;
+const ACTUAL_GROUND_Y = 75;
 
 let GROUND_Y, groundYDest;
 
@@ -9,10 +10,10 @@ let cameraRotDest;
 let cameraDist, cameraDistDest;
 
 function resetCamera() {
-  cameraDistDest = cameraDist = 200;
+  cameraDistDest = cameraDist = 500;
   camera.x = camera.z = 0;
   cameraRotDest = camera.rot = 0;
-  groundYDest = GROUND_Y = 75;
+  groundYDest = GROUND_Y = ACTUAL_GROUND_Y;
 }
 
 function transform(camera, x, z, sin, cos) {
@@ -41,8 +42,10 @@ function calculate3D(paths, objects, focusX, focusZ) {
   const sin = Math.sin(camera.rot),
   cos = Math.cos(camera.rot);
 
-  camera.x = focusX - sin * cameraDist;
-  camera.z = focusZ - cos * cameraDist;
+  if (focusX !== undefined) {
+    camera.x = focusX - sin * cameraDist;
+    camera.z = focusZ - cos * cameraDist;
+  }
 
   paths = paths.map(obj => {
     const points = [[obj.x, obj.z], [obj.x + obj.width, obj.z],
@@ -78,7 +81,8 @@ function calculate3D(paths, objects, focusX, focusZ) {
     return points.map(({x, z}) => flatify(x, GROUND_Y, z));
   }).filter(obj => obj);
   objects = objects.map(obj => {
-    const y = obj.y === undefined ? GROUND_Y : obj.y;
+    if (!obj) return;
+    const y = obj.y === undefined ? GROUND_Y : obj.relativeY ? obj.y + GROUND_Y : obj.y;
     const transformation = transform(camera, obj.x, obj.z, sin, cos);
     if (transformation.z >= NEAR_PLANE) {
       const coords = flatify(transformation.x, y, transformation.z);
