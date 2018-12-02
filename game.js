@@ -3,12 +3,19 @@ const CHUNK_SIZE = 2500;
 let player;
 
 function die() {
-  skipEndBtn.style.opacity = null;
-  player.dead = true;
-  player.zv = -8;
-  player.ducking = false;
-  player.endDeathAnim = Date.now() + 2000;
-  shakeRadius = 10;
+  if (player.invincible) return;
+  if (player.lives <= 0) {
+    skipEndBtn.style.opacity = null;
+    player.dead = true;
+    player.zv = -8;
+    player.ducking = false;
+    player.endDeathAnim = Date.now() + 2000;
+    shakeRadius = 10;
+  } else {
+    player.lives--; // TODO: update lives display
+    player.invincible = true; // should also disable the shop
+    player.invincibleTimeout = Date.now() + 3000;
+  }
 }
 
 function movePlayer() {
@@ -50,6 +57,10 @@ function movePlayer() {
     }
     return;
   }
+  if (player.invincibleTimeout !== null && now > player.invincibleTimeout) {
+    player.invincibleTimeout = null;
+    player.invincible = false;
+  }
   if (player.yv === null && keys.jump) {
     player.yv = -8;
   }
@@ -76,8 +87,10 @@ function movePlayer() {
   }
   if (player.lastWhoopsie !== null && now < player.lastWhoopsie + 5000) {
     player.z += 0.5 * player.speed;
+    player.score += 0.5 * player.speed;
   } else {
-    player.z += player.speed;
+    player.z += (player.speedy ? 5 : 1) * player.speed;
+    player.score += (player.speedy ? 5 : 1) * player.speed;
     player.lastWhoopsie = null;
   }
   if (player.z > CHUNK_SIZE) {
@@ -115,17 +128,17 @@ function movePlayer() {
         break;
       case 'caterpillar_tree':
         if (!player.ducking) {
-          if (!player.invincible) die();
+          die();
         }
         break;
       case 'trash_cart':
         if (player.y > 20) {
-          if (!player.invincible) die();
+          die();
         }
         break;
       case 'construction_fence':
         if (obj.x < 0 && player.x < 10 || obj.x > 0 && player.x > -10) {
-          if (!player.invincible) die();
+          die();
         }
         break;
       case 'backpack':
@@ -142,7 +155,6 @@ function movePlayer() {
     }
   });
   player.speed += 0.01;
-  player.score++;
 }
 
 const coinPositions = [-35, 0, 35];
@@ -154,7 +166,10 @@ function reset() {
     invincible: false,
     dead: false, seeCC: false, endDeathAnim: null, ccSteps: 0, ccZDest: null,
     score: 0, coins: 0,
-    ccFallingState: 0
+    ccFallingState: 0,
+    lives: 0, superSprints: 0, speedResets: 0,
+    invincibleTimeout: null,
+    speedy: false
   };
   currentMap = nextMap = null;
   updateMap();

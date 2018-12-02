@@ -127,15 +127,24 @@ button {
   margin: 10px 0;
   padding: 10px 0;
 }
-.transparent {
+.transparent, .border {
   background-color: transparent;
   transition: letter-spacing .2s;
-  text-shadow: 0 0 3px rgba(0, 0, 0, 0.8);
+  text-shadow: 0 0 10px rgba(0, 0, 0, 0.8);
+}
+.border {
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
+  padding: 5px 10px;
+  transition: background-color .2s;
 }
 .btn.transparent:hover {
   color: white;
   background-color: transparent;
   letter-spacing: 3px;
+}
+.btn.border:hover {
+  background-color: rgba(255, 255, 255, 0.2);
 }
 .score-label {
   font-size: 20px;
@@ -147,6 +156,10 @@ button {
 }
 #intro, #game {
   justify-content: flex-end;
+}
+#skip-intro, #skip-end {
+  margin-bottom: 16px;
+  font-size: 24px;
 }
 
 #touch-circle {
@@ -162,4 +175,83 @@ button {
   background-size: 270px;
   background-repeat: no-repeat;
   opacity: 0.5;
+}
+
+.game-ui {
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  color: rgba(255, 255, 255, 0.8);
+}
+.scores {
+  flex: none;
+  padding: 10px;
+}
+#current-score {
+  font-size: 40px;
+  display: block;
+}
+#coins {
+  font-size: 20px;
+  padding: 5px;
+  padding-left: 20px;
+  background-image: url('./images/aplus.svg');
+  background-repeat: no-repeat;
+  background-position: left center;
+  background-size: 15px;
+}
+.shop-btn {
+  flex: auto;
+  border: none;
+  background: none;
+  border-left: 1px solid rgba(255, 255, 255, 0.3);
+  background-position: center;
+  background-size: 40px;
+  background-repeat: no-repeat;
+  color: inherit;
+  position: relative;
+  cursor: pointer;
+}
+.shop-btn:not(.disabled):hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+.shop-btn.disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+.label {
+  font-size: 8px;
+  position: absolute;
+  top: 10px;
+  transform: translateX(-50%);
+  white-space: nowrap;
+}
+.price {
+  font-size: 12px;
+  background-image: url('./images/aplus.svg');
+  background-repeat: no-repeat;
+  background-position: left center;
+  background-size: 8px;
+  position: absolute;
+  bottom: 5px;
+  transform: translateX(-50%);
+  padding-left: 12px;
+}
+.shop-btn:focus {
+  outline: none;
+}
+#buy-speedy { background-image: url('./images/super_speed.svg'); }
+#buy-life { background-image: url('./images/extra_life.svg'); }
+#buy-reset { background-image: url('./images/turtle.svg'); }
+#lives {
+  font-size: 16px;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  margin-left: 10px;
+  margin-top: 5px;
+  text-shadow: 0 0 3px black;
 }

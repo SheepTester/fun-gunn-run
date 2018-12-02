@@ -4,6 +4,8 @@ README.md
 textureatlasifier.js
 textureatlas.svg
 textureatlas.json
+fs-helper.js
+svg-simplifier.js
 
 dumb-logo.svg
 touch-circle.svg

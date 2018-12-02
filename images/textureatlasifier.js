@@ -1,20 +1,4 @@
-const fs = require('fs');
-
-function read(file) {
-  return new Promise((res, rej) => {
-    fs.readFile(file, 'utf8', (err, data) => err ? rej(err) : res(data));
-  });
-}
-function write(file, contents) {
-  return new Promise((res, rej) => {
-    fs.writeFile(file, contents, 'utf8', err => err ? rej(err) : res());
-  });
-}
-function readdir(dir, contents) {
-  return new Promise((res, rej) => {
-    fs.readdir(dir, (err, files) => err ? rej(err) : res(files));
-  })
-}
+const {read, write, readdir} = require('./fs-helper.js');
 
 const widthHeightRegex = /width="([0-9.]+)" height="([0-9.]+)"/;
 

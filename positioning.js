@@ -88,6 +88,7 @@ function calculate3D(paths, objects, focusX, focusZ) {
       const coords = flatify(transformation.x, y, transformation.z);
       coords.type = obj.type;
       coords.distance = transformation.z;
+      coords.translucency = obj.opacity === undefined ? null : obj.opacity;
       return coords;
     } else {
       return;

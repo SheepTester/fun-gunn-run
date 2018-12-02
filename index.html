@@ -61,10 +61,19 @@
       <button class="btn menu-btn" id="menu-btn">menu</button>
     </div>
     <div class="container" id="intro">
-      <button class="btn transparent" id="skip-intro">skip</button>
+      <button class="btn border" id="skip-intro">skip</button>
     </div>
     <div class="container" id="game">
-      <button class="btn transparent" id="skip-end">skip</button>
+      <div class="game-ui">
+        <div class="scores">
+          <span id="current-score">5820</span>
+          <span id="coins">70</span>
+        </div>
+        <button class="shop-btn" id="buy-speedy"><span class="label">Hyperspeed</span><span class="price">500</span></button>
+        <button class="shop-btn" id="buy-life"><span class="label">Extra life</span><span id="lives">0</span><span class="price">500</span></button>
+        <button class="shop-btn disabled" id="buy-reset"><span class="label">Slow down</span><span class="price">500</span></button>
+      </div>
+      <button class="btn border" id="skip-end">skip</button>
     </div>
     <div id="touch-circle"></div>
   </body>

@@ -70,7 +70,7 @@ const curlymangoBack = {
   yv: 0,
   z: 0,
   relativeY: true,
-  proximity: 1
+  proximity: 1, opacity: 1
 };
 for (let i = 30; i--;) menu.objects.push({type: Math.random() < 0.1 ? 'caterpillar_tree' : 'tree', x: Math.random() * 500 - 250, z: Math.random() * 500 - 250});
 const beginningPath = {x: -50, z: -500, width: 100, height: 500};
@@ -92,7 +92,8 @@ function paint() {
       type: player.ducking ? 'player_ducking' : 'player_temp',
       x: player.x,
       y: player.y,
-      z: player.z
+      z: player.z,
+      opacity: player.invincible ? 0.5 : undefined
     };
     if (player.ccFallingState === 0) {
       curlymangoBack.z = 100;
@@ -112,6 +113,7 @@ function paint() {
       } else {
         curlymangoBack.proximity += (1 - curlymangoBack.proximity) / 3;
       }
+      curlymangoBack.opacity = curlymangoBack.proximity;
       curlymangoBack.z = playerObject.z - cameraDistDest * curlymangoBack.proximity - 10;
     }
     camera.rot += (cameraRotDest - camera.rot) / 5;
@@ -180,11 +182,11 @@ function paint() {
     c.fill();
   });
   objects.forEach(obj => {
-    if (obj.type === 'curlymango_back') c.globalAlpha = curlymangoBack.proximity;
+    if (obj.translucency !== null) c.globalAlpha = obj.translucency;
     const img = imageData[obj.type];
     const width = obj.scale * (customSizes[obj.type] ? customSizes[obj.type][0] : img.width);
     const height = obj.scale * (customSizes[obj.type] ? customSizes[obj.type][1] : img.height); // support for diff. ratios?
     drawIfInCanvas(img, obj.x - width / 2 + shakeX, obj.y - height + shakeY, width, height);
-    if (obj.type === 'curlymango_back') c.globalAlpha = 1;
+    if (obj.translucency !== null) c.globalAlpha = 1;
   });
 }
