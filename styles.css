@@ -95,6 +95,46 @@ body {
   max-width: 600px;
   text-align: center;
 }
+.submit-score-label, .submit-score-error {
+  font-size: 16px;
+  max-width: 500px;
+  background-color: rgba(255, 255, 255, 0.3);
+  padding: 20px;
+}
+.submit-score-container {
+  display: flex;
+  width: 100%;
+  max-width: 500px;
+  padding: 0 20px;
+  box-sizing: border-box;
+}
+.submit-score-error {
+  background-color: #bb5454;
+  color: white;
+  padding: 10px 20px;
+}
+#submit-score {
+  flex: none;
+}
+input {
+  border: none;
+  background: none;
+  background-color: rgba(0, 0, 0, 0.5);
+  color: white;
+  font: inherit;
+  font-size: 16px;
+  padding: 10px;
+  border-radius: 5px;
+  margin-right: 10px;
+  cursor: pointer;
+  flex: auto;
+  width: 0;
+}
+input:focus {
+  outline: none;
+  background-color: rgba(0, 0, 0, 0.7);
+  cursor: auto;
+}
 button {
   font: inherit;
 }
@@ -109,13 +149,13 @@ button {
   text-transform: uppercase;
   padding: 5px 10px;
 }
-.btn:not(.disabled):hover {
+.btn:not(.disabled):not(:disabled):hover {
   background-color: rgba(0, 0, 0, 0.9);
 }
 .btn:focus {
   outline: none; /* oh well */
 }
-.disabled {
+.disabled, :disabled {
   opacity: 0.5;
   cursor: default;
 }
@@ -124,7 +164,7 @@ button {
   width: 100%;
   max-width: 300px;
   border-radius: 10px;
-  margin: 10px 0;
+  margin: 10px;
   padding: 10px 0;
 }
 .transparent, .border {

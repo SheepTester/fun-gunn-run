@@ -2,7 +2,7 @@ const CHUNK_SIZE = 2500;
 
 let player;
 
-function die() {
+function die(manner) {
   if (player.invincible) return;
   if (player.lives <= 0) {
     skipEndBtn.style.opacity = null;
@@ -14,6 +14,8 @@ function die() {
     speedyBtn.disabled = true;
     lifeBtn.disabled = true;
     resetBtn.disabled = true;
+    player.deathManner = manner;
+    player.deathDate = Date.now();
   } else {
     player.lives--;
     livesDisplay.textContent = player.lives;
@@ -253,7 +255,7 @@ function generateMap(zOffset, justTurned = false) {
         map.objects.push({type: 'backpack', x: left ? -30 : 30, z: z + zOffset});
         break;
       default:
-        map.objects.push({type: 'tree', x: left ? -75 : 75, z: z + zOffset});
+        map.objects.push({type: Math.random() < 0.01 ? 'sheep' : 'tree', x: left ? -75 : 75, z: z + zOffset});
     }
   }
   let coinStringStop = -1, coinMode;

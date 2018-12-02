@@ -6,6 +6,7 @@ const keys = {
 };
 
 document.addEventListener('keydown', e => {
+  if (e.target.tagName === 'INPUT') return;
   switch (e.keyCode) {
     case 37:
     case 65:

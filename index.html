@@ -9,11 +9,12 @@
     <script src="../sheep2.js" charset="utf-8"></script> -->
     <link rel="stylesheet" href="./styles.css">
     <link href="https://fonts.googleapis.com/css?family=Montserrat" rel="stylesheet">
-    <script src="./input.js" charset="utf-8"></script>
+    <!-- <script src="./input.js" charset="utf-8"></script>
     <script src="./render.js" charset="utf-8"></script>
     <script src="./positioning.js" charset="utf-8"></script>
     <script src="./game.js" charset="utf-8"></script>
-    <script src="./main.js" charset="utf-8"></script>
+    <script src="./main.js" charset="utf-8"></script> -->
+    <script src="./everything.js" charset="utf-8"></script>
   </head>
   <body class="menu">
     <div class="ground"></div>
@@ -21,21 +22,26 @@
     <div class="container" id="menu">
       <img src="./images/dumb-logo.svg" alt="&quot;Fun&quot; Gunn Run - SELF escapee training" class="game-title">
       <button class="btn menu-btn" id="play">play</button>
-      <button class="btn menu-btn disabled">options</button>
+      <button class="btn menu-btn disabled" id="options">options</button>
       <button class="btn menu-btn" id="about">about</button>
       <button class="btn menu-btn" id="help">help</button>
+      <button class="btn menu-btn disabled" id="leaderboard">leaderboard</button>
     </div>
     <div class="container" id="menu-about">
       <div class="text-container">
         <h1>About</h1>
         <p>This is a Gunn-themed version of Temple Run but with very, very bad graphics. You, a student, attempt to escape SELF, but Curlymango starts chasing you. You try to outrun her, but she's surprisingly resilient.</p>
         <p>This game is open-sourced on <a href="https://github.com/SheepTester/fun-gunn-run">Github</a>; bug reports and feature requests can go there. Anyone may (and should) make own version of this game, though please consider crediting the creator or link to this game somewhere.</p>
-        <h2>Todo</h2>
+        <h2>Updates</h2>
+        <p>Update pre-4</p>
+        <ul>
+          <li>support for leaderboard</li>
+        </ul>
+        <p>Update pre-3</p>
         <ul>
           <li>player texture</li>
-          <li>sound effects?</li>
+          <li>cannot pick up coins while invincible</li>
         </ul>
-        <h2>Updates</h2>
         <p>Update pre-2</p>
         <ul>
           <li>coins are useful</li>
@@ -64,6 +70,12 @@
       <p class="score-label">score</p>
       <p id="score">0</p>
       <button class="btn menu-btn" id="play-again-btn">fail again</button>
+      <p class="submit-score-label">Submit your score with an HTTPS link to a Google doc that you identify with most (your IP address will be stored, but not publicized):</p>
+      <div class="submit-score-container">
+        <input type="text" placeholder="https://docs.google.com/document/d/" id="docs-link">
+        <button class="btn" id="submit-score">submit</button>
+      </div>
+      <p class="submit-score-error hidden" id="error"></p>
       <button class="btn menu-btn" id="menu-btn">menu</button>
     </div>
     <div class="container" id="intro">

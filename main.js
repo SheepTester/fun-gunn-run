@@ -14,7 +14,30 @@ if (window.location.search) {
   });
 }
 
-const VERSION = 'pre-2';
+const VERSION = 'pre-3';
+const googleDocsURLRegex = /^https:\/\/docs\.google\.com\/[a-z]/;
+
+function sendScore(userUrl) {
+  return fetch('https://test-9d9aa.firebaseapp.com/newFGRScore', {
+    headers: { 'Content-Type': 'application/json; charset=utf-8' },
+    method: 'POST',
+    body: JSON.stringify({
+      score: Math.floor(player.score),
+      manner: player.deathManner || 'unknown',
+      coins: player.coins,
+      lives: player.lives,
+      time: player.deathDate,
+      url: userUrl,
+      version: VERSION
+    })
+  }).then(res => {
+    if (res.status === 200) {
+      return Promise.resolve();
+    } else {
+      return Promise.reject();
+    }
+  });
+}
 
 let cwidth, cheight;
 let c;
@@ -133,6 +156,7 @@ function init() {
     animID = window.requestAnimationFrame(callPaint);
   }
   document.addEventListener('keydown', e => {
+    if (e.target.tagName === 'INPUT') return;
     if (e.keyCode === 80) {
       paused = !paused;
       if (paused) window.cancelAnimationFrame(animID);
@@ -173,6 +197,25 @@ function init() {
   skipEndBtn.addEventListener('click', e => {
     if (player.dead) {
       playAgain();
+    }
+  });
+
+  const docsLink = document.getElementById('docs-link');
+  const error = document.getElementById('error');
+  const scoreSubmitBtn = document.getElementById('submit-score');
+  scoreSubmitBtn.addEventListener('click', e => {
+    if (googleDocsURLRegex.test(docsLink.value)) {
+      scoreSubmitBtn.disabled = true;
+      sendScore(docsLink.value).then(() => {
+        setMode('menu-leaderboard');
+      }).catch(() => {
+        error.classList.remove('hidden');
+        error.textContent = 'Something went wrong.';
+        scoreSubmitBtn.disabled = false;
+      });
+    } else {
+      error.classList.remove('hidden');
+      error.textContent = 'That is not an HTTPS link to a Google Doc.';
     }
   });
 
