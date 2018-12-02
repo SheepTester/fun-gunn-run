@@ -84,6 +84,13 @@ const CIRCLE_SIZE = -140;
 function initTouch() {
   const touchCircle = document.getElementById('touch-circle');
   let initX, initY;
+  function touchCircleDown(clientX, clientY) {
+    touchCircle.style.display = 'block';
+    initX = clientX;
+    initY = clientY;
+    touchCircle.style.transform = `translate(${initX}px, ${initY}px)`;
+    touchCircle.style.backgroundPosition = '0 0';
+  }
   function doCircles(clientX, clientY) {
     const diffX = clientX - initX;
     const diffY = clientY - initY;
@@ -112,11 +119,7 @@ function initTouch() {
   document.addEventListener('touchstart', e => {
     if (touch === null) {
       touch = e.changedTouches[0].identifier;
-      touchCircle.style.display = 'block';
-      initX = e.touches[0].clientX;
-      initY = e.touches[0].clientY;
-      touchCircle.style.transform = `translate(${initX}px, ${initY}px)`;
-      touchCircle.style.backgroundPosition = '0 0';
+      touchCircleDown(e.touches[0].clientX, e.touches[0].clientY);
     }
     if (mode === 'game' && e.target.tagName === 'DIV') e.preventDefault();
   }, {passive: false});
@@ -134,6 +137,29 @@ function initTouch() {
     }
     if (mode === 'game' && e.target.tagName === 'DIV') e.preventDefault();
   }, {passive: false});
+  if (params.mouseCircle) {
+    document.addEventListener('mousedown', e => {
+      if (touch === null) {
+        touch = 'mouse';
+        touchCircleDown(e.clientX, e.clientY);
+      }
+      if (mode === 'game' && e.target.tagName === 'DIV') e.preventDefault();
+    });
+    document.addEventListener('mousemove', e => {
+      if ('mouse' === touch) {
+        doCircles(e.clientX, e.clientY);
+      }
+      if (mode === 'game' && e.target.tagName === 'DIV') e.preventDefault();
+    });
+    document.addEventListener('mouseup', e => {
+      if ('mouse' === touch) {
+        touchCircle.style.display = 'none';
+        keys.left = keys.jump = keys.right = keys.ducking = false;
+        touch = null;
+      }
+      if (mode === 'game' && e.target.tagName === 'DIV') e.preventDefault();
+    });
+  }
 }
 
 
@@ -158,9 +184,9 @@ function loadImages() {
     new Promise(res => {
       masterSVG = new Image();
       masterSVG.onload = res;
-      masterSVG.src = `./images/textureatlas.svg`;
+      masterSVG.src = `./images/textureatlas.svg?v=${VERSION}`;
     }),
-    fetch('./images/textureatlas.json').then(r => r.json()).then(json => imageData = json)
+    fetch('./images/textureatlas.json?v=' + VERSION).then(r => r.json()).then(json => imageData = json)
   ]);
 }
 function drawIfInCanvas(img, x, y, width, height) {
@@ -353,20 +379,22 @@ function paint() {
     c.fill();
   });
   let noRenderUnder = renderLimit === null ? 0 : objects.length - renderLimit;
+  let objectsRendered = 0;
   objects.forEach((obj, i) => {
     if (i < noRenderUnder) return;
     if (params.autoCensor && obj.type === 'aplus' && obj.scale < 0.7) return;
+    objectsRendered++;
     if (obj.translucency !== null) c.globalAlpha = obj.translucency;
     const img = imageData[obj.type];
     const width = obj.scale * (customSizes[obj.type] ? customSizes[obj.type][0] : img.width);
-    const height = obj.scale * (customSizes[obj.type] ? customSizes[obj.type][1] : img.height); // support for diff. ratios?
+    const height = obj.scale * (customSizes[obj.type] ? customSizes[obj.type][1] : img.height);
     drawIfInCanvas(img, obj.x - width / 2 + shakeX, obj.y - height + shakeY, width, height);
     if (obj.translucency !== null) c.globalAlpha = 1;
   });
   const time = performance.now() - start;
   if (params.autoCensor && time) {
-    if (renderLimit === null) renderLimit = Math.floor(objects.length * +params.autoCensor / time);
-    else renderLimit = Math.floor((objects.length * +params.autoCensor / time + renderLimit) / 2);
+    if (renderLimit === null) renderLimit = Math.floor(objectsRendered * +params.autoCensor / time);
+    else renderLimit = Math.floor((objectsRendered * +params.autoCensor / time + renderLimit) / 2);
   }
 }
 
@@ -764,9 +792,10 @@ function generateMap(zOffset, justTurned = false) {
 
 
 // URL PARAMETERS
-// quality    - canvas quality
-// skipIntro  - (legacy) skips intro
-// autoCensor - automatically limits the objects drawn such that it should take the given amount of milliseconds to render them
+// quality     - canvas quality
+// skipIntro   - (legacy) skips intro
+// autoCensor  - automatically limits the objects drawn such that it should take the given amount of milliseconds to render them
+// mouseCircle - enables touch circle for mouse
 const params = {};
 if (window.location.search) {
   window.location.search.slice(1).split('&').forEach(entry => {
@@ -780,7 +809,12 @@ if (window.location.search) {
 }
 
 const VERSION = 'pre-3';
-const googleDocsURLRegex = /^https:\/\/docs\.google\.com\/[a-z]/;
+const HIGHSCORE_COOKIE = '[fun-gunn-run] highscore';
+// modified regex from  https://stackoverflow.com/questions/161738/what-is-the-best-regular-expression-to-check-if-a-string-is-a-valid-url#comment19948615_163684
+const urlRegex = /^(https?):\/\/[\-A-Za-z0-9+&@#\/%?=~_|!:,.;]*[\-A-Za-z0-9+&@#\/%=~_|]$/;
+
+let highScore = +localStorage.getItem(HIGHSCORE_COOKIE);
+if (isNaN(highScore)) highScore = 0;
 
 function sendScore(userUrl) {
   return fetch('https://test-9d9aa.firebaseapp.com/newFGRScore', {
@@ -809,11 +843,11 @@ let c;
 let mode;
 
 function setMode(newMode) {
-  document.querySelectorAll(`#${mode} button`).forEach(btn => {
+  document.querySelectorAll(`#${mode} button, #${mode} input`).forEach(btn => {
     btn.disabled = true;
   });
   document.body.className = mode = newMode;
-  document.querySelectorAll(`#${newMode} button`).forEach(btn => {
+  document.querySelectorAll(`#${newMode} button, #${newMode} input`).forEach(btn => {
     btn.disabled = false;
   });
 }
@@ -894,12 +928,23 @@ function init() {
   resize();
   window.addEventListener('resize', resize);
 
-  const score = document.getElementById('score');
+  const scoreElem = document.getElementById('score');
+  const highscoreElem = document.getElementById('highscore');
   function playAgain() {
     setMode('play-again');
     GROUND_Y = groundYDest = 40;
     shakeRadius = 0;
-    score.textContent = Math.floor(player.score);
+    const score = Math.floor(player.score);
+    scoreElem.textContent = score;
+    if (score > highScore) {
+      highscoreElem.textContent = `you beat your high score! (it was ${highScore})`;
+      highScore = score;
+      localStorage.setItem(HIGHSCORE_COOKIE, highScore);
+    } else if (score === highScore) {
+      highscoreElem.textContent = 'you almost beat your high score D:';
+    } else {
+      highscoreElem.textContent = 'high score: ' + highScore;
+    }
     currentPlayBtn = playAgainBtn;
     currentBackMenu = playAgainToMenu;
   }
@@ -943,9 +988,16 @@ function init() {
   const playAgainToMenu = document.getElementById('menu-btn');
   const helpToMenu = document.getElementById('from-help-back');
   const aboutToMenu = document.getElementById('from-about-back');
+  const optionsToMenu = document.getElementById('from-options-back');
+  const leaderboardToMenu = document.getElementById('from-leaderboard-back');
   playAgainToMenu.addEventListener('click', toMenu);
   helpToMenu.addEventListener('click', toMenu);
   aboutToMenu.addEventListener('click', toMenu);
+  optionsToMenu.addEventListener('click', toMenu);
+  leaderboardToMenu.addEventListener('click', () => {
+    sortDropdown.disabled = true;
+    toMenu();
+  });
   document.getElementById('help').addEventListener('click', e => {
     setMode('menu-help');
     currentBackMenu = helpToMenu;
@@ -953,6 +1005,15 @@ function init() {
   document.getElementById('about').addEventListener('click', e => {
     setMode('menu-about');
     currentBackMenu = aboutToMenu;
+  });
+  document.getElementById('options').addEventListener('click', e => {
+    setMode('menu-options');
+    currentBackMenu = optionsToMenu;
+  });
+  document.getElementById('leaderboard').addEventListener('click', e => {
+    setMode('menu-leaderboard');
+    currentBackMenu = leaderboardToMenu;
+    fetchLeaderboard();
   });
   document.getElementById('skip-intro').addEventListener('click', e => {
     shakeRadius = 0;
@@ -969,10 +1030,11 @@ function init() {
   const error = document.getElementById('error');
   const scoreSubmitBtn = document.getElementById('submit-score');
   scoreSubmitBtn.addEventListener('click', e => {
-    if (googleDocsURLRegex.test(docsLink.value)) {
+    if (urlRegex.test(docsLink.value)) {
       scoreSubmitBtn.disabled = true;
       sendScore(docsLink.value).then(() => {
         setMode('menu-leaderboard');
+        fetchLeaderboard();
       }).catch(() => {
         error.classList.remove('hidden');
         error.textContent = 'Something went wrong.';
@@ -980,11 +1042,97 @@ function init() {
       });
     } else {
       error.classList.remove('hidden');
-      error.textContent = 'That is not an HTTPS link to a Google Doc.';
+      error.textContent = 'This is not a link.';
     }
   });
 
-  Array.from(document.getElementsByTagName('button')).forEach(btn => btn.disabled = true);
+  const leaderboardContainer = document.getElementById('leaderboard-container');
+  const sortDropdown = document.getElementById('sort');
+  const fetchBtn = document.createElement('button');
+  fetchBtn.classList.add('btn');
+  fetchBtn.classList.add('fetch-again-btn');
+  fetchBtn.textContent = 'try again';
+  fetchBtn.addEventListener('click', fetchLeaderboard);
+  sortDropdown.addEventListener('change', renderLeaderboard);
+  const mannerValues = {backpack: 0, sign: 1, tree: 2, fence: 3, cart: 4};
+  let scores;
+  function renderLeaderboard() {
+    leaderboardContainer.innerHTML = '';
+    switch (sortDropdown.value) {
+      case 'coins':
+        scores.sort((a, b) => b.coins - a.coins);
+        break;
+      case 'time':
+        scores.sort((a, b) => b.time - a.time);
+        break;
+      case 'manner':
+        scores.sort((a, b) => a.manner === b.manner ? b.score - a.score : mannerValues[a.manner] - mannerValues[b.manner]);
+        break;
+      default:
+        scores.sort((a, b) => b.score - a.score);
+    }
+    const fragment = document.createDocumentFragment();
+    scores.forEach(({url, time, score, coins, manner}) => {
+      const link = document.createElement('a');
+      link.className = `leaderboard-item death-by-${manner}`;
+      link.href = url;
+      const coinDisplay = document.createElement('span');
+      coinDisplay.className = 'coins';
+      coinDisplay.textContent = coins;
+      link.appendChild(coinDisplay);
+      const scoreDisplay = document.createElement('span');
+      scoreDisplay.className = 'score';
+      scoreDisplay.textContent = score;
+      link.appendChild(scoreDisplay);
+      const timeDisplay = document.createElement('span');
+      timeDisplay.className = 'time';
+      timeDisplay.textContent = new Date(time).toLocaleString();
+      link.appendChild(timeDisplay);
+      const urlDisplay = document.createElement('span');
+      urlDisplay.className = 'url';
+      urlDisplay.textContent = url;
+      link.appendChild(urlDisplay);
+      fragment.appendChild(link);
+    });
+    leaderboardContainer.appendChild(fragment);
+  }
+  function fetchLeaderboard() {
+    if (fetchBtn.parentNode) fetchBtn.parentNode.removeChild(fetchBtn);
+    leaderboardContainer.textContent = 'Fetching leaderboard...';
+    fetch('https://test-9d9aa.firebaseapp.com/getFGRLeaderboard?v=' + Date.now())
+    .then(r => r.status === 200 ? r.json() : Promise.reject())
+    .then(json => {
+      scores = Object.values(json);
+      sortDropdown.disabled = false;
+      renderLeaderboard();
+    })
+    .catch(() => {
+      leaderboardContainer.textContent = 'Fetching failed.';
+      leaderboardContainer.appendChild(fetchBtn);
+      fetchBtn.disabled = false;
+    });
+  }
+
+  const qualityInput = document.getElementById('quality');
+  const autoCensorInput = document.getElementById('auto-censor');
+  const mouseCircleInput = document.getElementById('mouse-circle');
+  const outputLink = document.getElementById('generate-url');
+  if (params.quality) qualityInput.value = params.quality;
+  if (params.autoCensor) autoCensorInput.value = params.autoCensor;
+  if (params.mouseCircle) mouseCircleInput.checked = true;
+  function updateURL() {
+    let params = [];
+    if (quality.value) params.push('quality=' + quality.value);
+    if (autoCensorInput.value) params.push('autoCensor=' + autoCensorInput.value);
+    if (mouseCircleInput.checked) params.push('mouseCircle');
+    outputLink.href = '?' + params.join('&');
+  }
+  qualityInput.addEventListener('input', updateURL);
+  autoCensorInput.addEventListener('input', updateURL);
+  mouseCircleInput.addEventListener('change', updateURL);
+  updateURL();
+
+  [...document.getElementsByTagName('button'), ...document.getElementsByTagName('input')].forEach(btn => btn.disabled = true);
   toMenu();
 }
 

@@ -8,7 +8,6 @@ images used by CSS:
 
 - `touch-circle.svg`
 - `aplus.svg`
-- `aplus.svg`
 - `super_speed.svg`
 - `extra_life.svg`
 - `turtle.svg`

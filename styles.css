@@ -407,11 +407,11 @@ p.sort-label {
   width: 1px;
   height: 1px;
   opacity: 0.1;
-  background-image: url('./images/touch-circle.svg'), url('./images/aplus.svg'),
+  background-image: url('./images/touch-circle.svg'),
     url('./images/aplus.svg'), url('./images/super_speed.svg'),
     url('./images/extra_life.svg'), url('./images/turtle.svg'),
     url('./images/backpack.svg'), url('./images/construction_fence.svg'),
     url('./images/trash_cart.svg'), url('./images/caterpillar_tree.svg'),
-    url('./images/hailself.svg'), url('./images/aplus.svg'),
+    url('./images/hailself.svg'),
     url('./images/checkbox_no.svg'), url('./images/checkbox_yes.svg');
 }

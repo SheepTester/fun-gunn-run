@@ -7,5 +7,8 @@ textureatlas.json
 fs-helper.js
 svg-simplifier.js
 
+<< ONLY FOR TEXTUREATLASIFIER >>
 dumb-logo.svg
 touch-circle.svg
+checkbox_no.svg
+checkbox_yes.svg
