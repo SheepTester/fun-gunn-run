@@ -38,7 +38,7 @@ const menu = {
 const intro = {
   paths: [
     {x: 50, z: -115, width: 50, height: 115},
-    {x: 100, z: -115, width: 200, height: 50}
+    {x: 100, z: -115, width: 500, height: 50}
   ],
   objects: {
     classroom: {type: 'v1', x: 0, z: 0},
@@ -104,7 +104,7 @@ function paint() {
     }
     currentScoreDisplay.textContent = Math.floor(player.score);
     coinsDisplay.textContent = player.coins;
-    if (player.invincible || player.coins < PRICES.speedy) {
+    if (player.coins < PRICES.speedy) {
       if (!speedyBtn.classList.contains('disabled')) speedyBtn.classList.add('disabled');
     } else {
       if (speedyBtn.classList.contains('disabled')) speedyBtn.classList.remove('disabled');

@@ -16,7 +16,7 @@ if (window.location.search) {
   });
 }
 
-const VERSION = 1;
+const VERSION = 1.1;
 const HIGHSCORE_COOKIE = '[fun-gunn-run] highscore';
 // modified regex from  https://stackoverflow.com/questions/161738/what-is-the-best-regular-expression-to-check-if-a-string-is-a-valid-url#comment19948615_163684
 const urlRegex = /^(https?):\/\/[\-A-Za-z0-9+&@#\/%?=~_|!:,.;]*[\-A-Za-z0-9+&@#\/%=~_|]$/;
@@ -88,7 +88,7 @@ const PRICES = {
   life: 40,
   reset: 30
 };
-const SPEED_DECREASE = 5;
+const SPEED_DECREASE = 7;
 let skipEndBtn;
 let currentScoreDisplay, coinsDisplay, livesDisplay, speedyBtn, lifeBtn, resetBtn;
 let currentPlayBtn = null, currentBackMenu = null;
@@ -102,11 +102,12 @@ function init() {
   resetBtn = document.getElementById('buy-reset');
 
   speedyBtn.addEventListener('click', e => {
-    if (!player.invincible && player.coins >= PRICES.speedy) {
+    if (player.coins >= PRICES.speedy) {
       player.coins -= PRICES.speedy;
       player.invincible = true;
       player.speedy = true;
-      player.invincibleTimeout = frame + 600;
+      if (player.invincibleTimeout === null) player.invincibleTimeout = frame + 600;
+      else player.invincibleTimeout += 600;
     }
   });
   lifeBtn.addEventListener('click', e => {

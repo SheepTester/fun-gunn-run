@@ -203,7 +203,7 @@ const menu = {
 const intro = {
   paths: [
     {x: 50, z: -115, width: 50, height: 115},
-    {x: 100, z: -115, width: 200, height: 50}
+    {x: 100, z: -115, width: 500, height: 50}
   ],
   objects: {
     classroom: {type: 'v1', x: 0, z: 0},
@@ -269,7 +269,7 @@ function paint() {
     }
     currentScoreDisplay.textContent = Math.floor(player.score);
     coinsDisplay.textContent = player.coins;
-    if (player.invincible || player.coins < PRICES.speedy) {
+    if (player.coins < PRICES.speedy) {
       if (!speedyBtn.classList.contains('disabled')) speedyBtn.classList.add('disabled');
     } else {
       if (speedyBtn.classList.contains('disabled')) speedyBtn.classList.remove('disabled');
@@ -602,6 +602,7 @@ function movePlayer() {
     player.x += -player.x / 5;
   }
   if (player.lastWhoopsie !== null && frame < player.lastWhoopsie + 300) {
+    if (player.speedy) player.lastWhoopsie = null;
     player.z += 0.5 * player.speed;
     player.score += 0.5 * player.speed;
   } else {
@@ -745,9 +746,11 @@ function generateMap(zOffset, justTurned = false) {
     end = CHUNK_SIZE;
   } else {
     map.branches = Math.random() * (CHUNK_SIZE - 100);
-    map.paths.push({x: -300, z: map.branches + zOffset, width: 600, height: 100});
+    map.paths.push({x: -500, z: map.branches + zOffset, width: 1000, height: 100});
     map.paths.push({x: -50, z: zOffset, width: 100, height: map.branches});
-    map.objects.push({type: 'hailself', x: 0, z: map.branches + zOffset + 100})
+    map.objects.push({type: 'hailself', x: 0, z: map.branches + zOffset + 100});
+    map.objects.push({type: 'tree', x: -75, z: map.branches + zOffset - 25});
+    map.objects.push({type: 'tree', x: 75, z: map.branches + zOffset - 25});
     end = map.branches;
   }
   for (let z = justTurned ? 800 : 0; z < end - 300; z += Math.random() * 500 + 300) {
@@ -815,7 +818,7 @@ if (window.location.search) {
   });
 }
 
-const VERSION = 1;
+const VERSION = 1.1;
 const HIGHSCORE_COOKIE = '[fun-gunn-run] highscore';
 // modified regex from  https://stackoverflow.com/questions/161738/what-is-the-best-regular-expression-to-check-if-a-string-is-a-valid-url#comment19948615_163684
 const urlRegex = /^(https?):\/\/[\-A-Za-z0-9+&@#\/%?=~_|!:,.;]*[\-A-Za-z0-9+&@#\/%=~_|]$/;
@@ -887,7 +890,7 @@ const PRICES = {
   life: 40,
   reset: 30
 };
-const SPEED_DECREASE = 5;
+const SPEED_DECREASE = 7;
 let skipEndBtn;
 let currentScoreDisplay, coinsDisplay, livesDisplay, speedyBtn, lifeBtn, resetBtn;
 let currentPlayBtn = null, currentBackMenu = null;
@@ -901,11 +904,12 @@ function init() {
   resetBtn = document.getElementById('buy-reset');
 
   speedyBtn.addEventListener('click', e => {
-    if (!player.invincible && player.coins >= PRICES.speedy) {
+    if (player.coins >= PRICES.speedy) {
       player.coins -= PRICES.speedy;
       player.invincible = true;
       player.speedy = true;
-      player.invincibleTimeout = frame + 600;
+      if (player.invincibleTimeout === null) player.invincibleTimeout = frame + 600;
+      else player.invincibleTimeout += 600;
     }
   });
   lifeBtn.addEventListener('click', e => {

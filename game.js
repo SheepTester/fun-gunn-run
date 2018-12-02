@@ -96,6 +96,7 @@ function movePlayer() {
     player.x += -player.x / 5;
   }
   if (player.lastWhoopsie !== null && frame < player.lastWhoopsie + 300) {
+    if (player.speedy) player.lastWhoopsie = null;
     player.z += 0.5 * player.speed;
     player.score += 0.5 * player.speed;
   } else {
@@ -239,9 +240,11 @@ function generateMap(zOffset, justTurned = false) {
     end = CHUNK_SIZE;
   } else {
     map.branches = Math.random() * (CHUNK_SIZE - 100);
-    map.paths.push({x: -300, z: map.branches + zOffset, width: 600, height: 100});
+    map.paths.push({x: -500, z: map.branches + zOffset, width: 1000, height: 100});
     map.paths.push({x: -50, z: zOffset, width: 100, height: map.branches});
-    map.objects.push({type: 'hailself', x: 0, z: map.branches + zOffset + 100})
+    map.objects.push({type: 'hailself', x: 0, z: map.branches + zOffset + 100});
+    map.objects.push({type: 'tree', x: -75, z: map.branches + zOffset - 25});
+    map.objects.push({type: 'tree', x: 75, z: map.branches + zOffset - 25});
     end = map.branches;
   }
   for (let z = justTurned ? 800 : 0; z < end - 300; z += Math.random() * 500 + 300) {
