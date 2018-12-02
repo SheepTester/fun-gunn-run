@@ -57,7 +57,7 @@ document.addEventListener('keyup', e => {
       keys[e.keyCode] = false;
   }
 });
-const CENTRE_RADIUS = 40;
+const CENTRE_RADIUS = 20;
 const ranges = {
   right: [-3 * Math.PI / 8, 3 * Math.PI / 8],
   down: [Math.PI / 8, 7 * Math.PI / 8],

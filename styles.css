@@ -161,4 +161,5 @@ button {
   background-image: url('./images/touch-circle.svg');
   background-size: 270px;
   background-repeat: no-repeat;
+  opacity: 0.5;
 }
