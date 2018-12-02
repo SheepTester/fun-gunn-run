@@ -81,8 +81,34 @@ const CIRCLE_SIZE = -140;
 function initTouch() {
   const touchCircle = document.getElementById('touch-circle');
   let initX, initY;
+  function doCircles(clientX, clientY) {
+    const diffX = clientX - initX;
+    const diffY = clientY - initY;
+    if (diffX * diffX + diffY * diffY > CENTRE_RADIUS * CENTRE_RADIUS) {
+      const angle = Math.atan2(diffY, diffX);
+      let position;
+      const top = angle > ranges.top[0] && angle < ranges.top[1];
+      const down = angle > ranges.down[0] && angle < ranges.down[1];
+      const left = angle > ranges.left[0] || angle < ranges.left[1];
+      const right = angle > ranges.right[0] && angle < ranges.right[1];
+      if (left) {
+        position = top ? [1, 1] : down ? [1, 2] : [0, 2];
+      } else if (right) {
+        position = top ? [1, 4] : down ? [1, 3] : [0, 4];
+      } else {
+        position = top ? [0, 1] : down ? [0, 3] : [0, 0];
+      }
+      keys.left = left, keys.jump = top, keys.right = right, keys.ducking = down;
+      touchCircle.style.backgroundPosition = `${position[0] * CIRCLE_SIZE}px ${position[1] * CIRCLE_SIZE}px`;
+    } else {
+      keys.left = keys.jump = keys.right = keys.ducking = false;
+      touchCircle.style.backgroundPosition = '0 0';
+    }
+  }
+  let touch = null;
   document.addEventListener('touchstart', e => {
-    if (e.changedTouches[0].identifier === 0) {
+    if (touch === null) {
+      touch = e.changedTouches[0].identifier;
       touchCircle.style.display = 'block';
       initX = e.touches[0].clientX;
       initY = e.touches[0].clientY;
@@ -92,36 +118,16 @@ function initTouch() {
     if (mode === 'game' && e.target.tagName === 'DIV') e.preventDefault();
   }, {passive: false});
   document.addEventListener('touchmove', e => {
-    if (e.touches[0]) {
-      const diffX = e.touches[0].clientX - initX;
-      const diffY = e.touches[0].clientY - initY;
-      if (diffX * diffX + diffY * diffY > CENTRE_RADIUS * CENTRE_RADIUS) {
-        const angle = Math.atan2(diffY, diffX);
-        let position;
-        const top = angle > ranges.top[0] && angle < ranges.top[1];
-        const down = angle > ranges.down[0] && angle < ranges.down[1];
-        const left = angle > ranges.left[0] || angle < ranges.left[1];
-        const right = angle > ranges.right[0] && angle < ranges.right[1];
-        if (left) {
-          position = top ? [1, 1] : down ? [1, 2] : [0, 2];
-        } else if (right) {
-          position = top ? [1, 4] : down ? [1, 3] : [0, 4];
-        } else {
-          position = top ? [0, 1] : down ? [0, 3] : [0, 0];
-        }
-        keys.left = left, keys.jump = top, keys.right = right, keys.ducking = down;
-        touchCircle.style.backgroundPosition = `${position[0] * CIRCLE_SIZE}px ${position[1] * CIRCLE_SIZE}px`;
-      } else {
-        keys.left = keys.jump = keys.right = keys.ducking = false;
-        touchCircle.style.backgroundPosition = '0 0';
-      }
+    if (e.touches[0].identifier === touch) {
+      doCircles(e.touches[0].clientX, e.touches[0].clientY);
     }
     if (mode === 'game' && e.target.tagName === 'DIV') e.preventDefault();
   }, {passive: false});
   document.addEventListener('touchend', e => {
-    if (e.changedTouches[0].identifier === 0) {
+    if (e.changedTouches[0].identifier === touch) {
       touchCircle.style.display = 'none';
       keys.left = keys.jump = keys.right = keys.ducking = false;
+      touch = null;
     }
     if (mode === 'game' && e.target.tagName === 'DIV') e.preventDefault();
   }, {passive: false});
