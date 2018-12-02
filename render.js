@@ -1,6 +1,9 @@
 const customSizes = {
   aplus: [20, 20],
-  v1: [450, 175]
+  v1: [450, 175],
+  super_speed: [25, 20],
+  extra_life: [25, 25],
+  turtle: [28, 16]
 };
 let imageData, masterSVG;
 
@@ -88,12 +91,29 @@ function paint() {
     if (player.dead && keys.skip || now > player.endDeathAnim && player.ccSteps >= 3) {
       return 'menu';
     }
+    currentScoreDisplay.textContent = Math.floor(player.score);
+    coinsDisplay.textContent = player.coins;
+    if (player.invincible || player.coins < PRICES.speedy) {
+      if (!speedyBtn.classList.contains('disabled')) speedyBtn.classList.add('disabled');
+    } else {
+      if (speedyBtn.classList.contains('disabled')) speedyBtn.classList.remove('disabled');
+    }
+    if (player.coins < PRICES.life) {
+      if (!lifeBtn.classList.contains('disabled')) lifeBtn.classList.add('disabled');
+    } else {
+      if (lifeBtn.classList.contains('disabled')) lifeBtn.classList.remove('disabled');
+    }
+    if (player.speed < SPEED_DECREASE || player.coins < PRICES.reset) {
+      if (!resetBtn.classList.contains('disabled')) resetBtn.classList.add('disabled');
+    } else {
+      if (resetBtn.classList.contains('disabled')) resetBtn.classList.remove('disabled');
+    }
     const playerObject = {
       type: player.ducking ? 'player_ducking' : 'player_temp',
       x: player.x,
       y: player.y,
       z: player.z,
-      opacity: player.invincible ? 0.5 : undefined
+      opacity: player.invincible ? (player.invincibleTimeout - now < 1000 ? (now % 200 < 100 ? 0.3 : 0.7) : player.invincibleTimeout - now < 3000 ? (now % 500 < 250 ? 0.3 : 0.7) : 0.5) : undefined
     };
     if (player.ccFallingState === 0) {
       curlymangoBack.z = 100;

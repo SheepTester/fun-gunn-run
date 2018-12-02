@@ -26,6 +26,19 @@ document.addEventListener('keydown', e => {
       break;
     case 27:
       keys.skip = true;
+      if (currentBackMenu) currentBackMenu.click();
+      break;
+    case 49:
+      speedyBtn.click();
+      break;
+    case 50:
+      lifeBtn.click();
+      break;
+    case 51:
+      resetBtn.click();
+      break;
+    case 13:
+      if (currentPlayBtn) currentPlayBtn.click();
       break;
     default:
       keys[e.keyCode] = true;

@@ -12,7 +12,8 @@ function die() {
     player.endDeathAnim = Date.now() + 2000;
     shakeRadius = 10;
   } else {
-    player.lives--; // TODO: update lives display
+    player.lives--;
+    livesDisplay.textContent = player.lives;
     player.invincible = true; // should also disable the shop
     player.invincibleTimeout = Date.now() + 3000;
   }
@@ -60,6 +61,7 @@ function movePlayer() {
   if (player.invincibleTimeout !== null && now > player.invincibleTimeout) {
     player.invincibleTimeout = null;
     player.invincible = false;
+    player.speedy = false;
   }
   if (player.yv === null && keys.jump) {
     player.yv = -8;
@@ -99,7 +101,7 @@ function movePlayer() {
   }
   if (currentMap.branches !== null) {
     if (player.z > currentMap.branches + 100) {
-      if (!player.invincible) die();
+      if (!player.invincible) die('sign');
       else {
         player.z = 0;
         currentMap = nextMap = null;
@@ -119,26 +121,45 @@ function movePlayer() {
     if (obj.hit) return;
     obj.hit = true;
     switch (obj.type) {
+      case 'extra_life':
+      case 'super_speed':
+      case 'turtle':
       case 'aplus':
         if (player.x - 10 < obj.x && obj.x < player.x + 10 && player.y - 10 < obj.y && obj.y < player.y + 10) {
           const index = currentMap.objects.indexOf(obj);
           if (~index) currentMap.objects.splice(index, 1);
+          switch (obj.type) {
+            case 'aplus':
+              player.coins++;
+              break;
+            case 'extra_life':
+              player.lives++;
+              livesDisplay.textContent = player.lives;
+              break;
+            case 'super_speed':
+              player.invincible = true;
+              player.speedy = true;
+              player.invincibleTimeout = now + 10000;
+              break;
+            case 'turtle':
+              player.speed = Math.max(player.speed - SPEED_DECREASE, 0);
+              break;
+          }
         }
-        player.coins++;
         break;
       case 'caterpillar_tree':
         if (!player.ducking) {
-          die();
+          die('tree');
         }
         break;
       case 'trash_cart':
         if (player.y > 20) {
-          die();
+          die('cart');
         }
         break;
       case 'construction_fence':
         if (obj.x < 0 && player.x < 10 || obj.x > 0 && player.x > -10) {
-          die();
+          die('fence');
         }
         break;
       case 'backpack':
@@ -147,7 +168,7 @@ function movePlayer() {
             if (player.lastWhoopsie === null || now > player.lastWhoopsie + 5000) {
               player.lastWhoopsie = now;
             } else {
-              die();
+              die('backpack');
             }
           }
         }
@@ -167,13 +188,14 @@ function reset() {
     dead: false, seeCC: false, endDeathAnim: null, ccSteps: 0, ccZDest: null,
     score: 0, coins: 0,
     ccFallingState: 0,
-    lives: 0, superSprints: 0, speedResets: 0,
+    lives: 0,
     invincibleTimeout: null,
     speedy: false
   };
   currentMap = nextMap = null;
   updateMap();
   skipEndBtn.style.opacity = 0;
+  livesDisplay.textContent = 0;
 }
 function updateMap(justTurned = false) {
   if (nextMap) {
@@ -185,7 +207,7 @@ function updateMap(justTurned = false) {
       obj.z -= CHUNK_SIZE;
     });
   } else if (currentMap) {
-    if (!player.invincible) die();
+    if (!player.invincible) die('sign');
     else {
       currentMap = generateMap(0, true);
     }
@@ -241,7 +263,21 @@ function generateMap(zOffset, justTurned = false) {
       coinMode = Math.floor(Math.random() * 5);
     }
     if (coinMode < 3) {
-      map.objects.push({type: 'aplus', x: coinPositions[coinMode], y: GROUND_Y - 5, z: z + zOffset});
+      let type;
+      switch (Math.floor(Math.random() * 300)) {
+        case 0:
+          type = player.score > 10000 ? 'extra_life' : 'aplus';
+          break;
+        case 1:
+          type = player.score > 20000 ? 'super_speed' : 'aplus';
+          break;
+        case 2:
+          type = player.score > 15000 ? 'turtle' : 'aplus';
+          break;
+        default:
+          type = 'aplus';
+      }
+      map.objects.push({type: type, x: coinPositions[coinMode], y: GROUND_Y - 5, z: z + zOffset});
     }
   }
   return map;

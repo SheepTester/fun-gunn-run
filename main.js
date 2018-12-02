@@ -13,6 +13,8 @@ if (window.location.search) {
   });
 }
 
+const VERSION = 'pre-2';
+
 let cwidth, cheight;
 let c;
 let mode;
@@ -27,6 +29,7 @@ function setMode(newMode) {
   });
 }
 function startGameIntro() {
+  currentPlayBtn = null;
   if (params.skipIntro) return startGame();
   setMode('intro');
   cameraDist = 350;
@@ -47,9 +50,45 @@ function startGame() {
   curlymangoBack.proximity = 1;
 }
 
+const PRICES = {
+  speedy: 60,
+  life: 40,
+  reset: 30
+};
+const SPEED_DECREASE = 5;
 let skipEndBtn;
+let currentScoreDisplay, coinsDisplay, livesDisplay, speedyBtn, lifeBtn, resetBtn;
+let currentPlayBtn = null, currentBackMenu = null;
 function init() {
   initTouch();
+  currentScoreDisplay = document.getElementById('current-score');
+  coinsDisplay = document.getElementById('coins');
+  livesDisplay = document.getElementById('lives');
+  speedyBtn = document.getElementById('buy-speedy');
+  lifeBtn = document.getElementById('buy-life');
+  resetBtn = document.getElementById('buy-reset');
+
+  speedyBtn.addEventListener('click', e => {
+    if (!player.invincible && player.coins >= PRICES.speedy) {
+      player.coins -= PRICES.speedy;
+      player.invincible = true;
+      player.speedy = true;
+      player.invincibleTimeout = Date.now() + 10000;
+    }
+  });
+  lifeBtn.addEventListener('click', e => {
+    if (player.coins >= PRICES.life) {
+      player.coins -= PRICES.life;
+      player.lives++;
+      livesDisplay.textContent = player.lives;
+    }
+  });
+  resetBtn.addEventListener('click', e => {
+    if (player.coins >= PRICES.reset && player.speed >= SPEED_DECREASE) {
+      player.coins -= PRICES.reset;
+      player.speed = Math.max(player.speed - SPEED_DECREASE, 0);
+    }
+  });
 
   const canvas = document.getElementById('canvas');
   c = canvas.getContext('2d');
@@ -71,7 +110,9 @@ function init() {
     setMode('play-again');
     GROUND_Y = groundYDest = 40;
     shakeRadius = 0;
-    score.textContent = player.score;
+    score.textContent = Math.floor(player.score);
+    currentPlayBtn = playAgainBtn;
+    currentBackMenu = playAgainToMenu;
   }
 
   let paused = false;
@@ -101,18 +142,27 @@ function init() {
 
   function toMenu() {
     setMode('menu');
+    currentPlayBtn = playBtn;
+    currentBackMenu = null;
   }
 
-  document.getElementById('play').addEventListener('click', startGameIntro);
-  document.getElementById('play-again-btn').addEventListener('click', startGameIntro);
-  document.getElementById('menu-btn').addEventListener('click', toMenu);
-  document.getElementById('from-help-back').addEventListener('click', toMenu);
-  document.getElementById('from-about-back').addEventListener('click', toMenu);
+  const playBtn = document.getElementById('play');
+  const playAgainBtn = document.getElementById('play-again-btn');
+  playBtn.addEventListener('click', startGameIntro);
+  playAgainBtn.addEventListener('click', startGameIntro);
+  const playAgainToMenu = document.getElementById('menu-btn');
+  const helpToMenu = document.getElementById('from-help-back');
+  const aboutToMenu = document.getElementById('from-about-back');
+  playAgainToMenu.addEventListener('click', toMenu);
+  helpToMenu.addEventListener('click', toMenu);
+  aboutToMenu.addEventListener('click', toMenu);
   document.getElementById('help').addEventListener('click', e => {
     setMode('menu-help');
+    currentBackMenu = helpToMenu;
   });
   document.getElementById('about').addEventListener('click', e => {
     setMode('menu-about');
+    currentBackMenu = aboutToMenu;
   });
   document.getElementById('skip-intro').addEventListener('click', e => {
     shakeRadius = 0;
@@ -126,7 +176,7 @@ function init() {
   });
 
   Array.from(document.getElementsByTagName('button')).forEach(btn => btn.disabled = true);
-  setMode('menu');
+  toMenu();
 }
 
 document.addEventListener('DOMContentLoaded', init, {once: true});

@@ -189,6 +189,7 @@ button {
 .scores {
   flex: none;
   padding: 10px;
+  min-width: 120px;
 }
 #current-score {
   font-size: 40px;
