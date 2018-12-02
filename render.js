@@ -124,7 +124,7 @@ function paint() {
       x: player.x,
       y: player.y,
       z: player.z,
-      opacity: player.invincible ? (player.invincibleTimeout - frame < 60 ? (frame % 12 < 6 ? 0.2 : 0.5) : player.invincibleTimeout - frame < 180 ? (frame % 30 < 15 ? 0.2 : 0.5) : 0.2) : 0.5
+      opacity: player.invincible ? (player.invincibleTimeout - frame < 60 ? (frame % 12 < 6 ? 0.2 : PLAYER_OPACITY) : player.invincibleTimeout - frame < 180 ? (frame % 30 < 15 ? 0.2 : PLAYER_OPACITY) : 0.2) : PLAYER_OPACITY
     };
     if (player.ccFallingState === 0) {
       curlymangoBack.z = 100;
@@ -156,7 +156,7 @@ function paint() {
       playerObject.x, playerObject.z
     ));
   } else if (mode.slice(0, 4) === 'menu') {
-    camera.rot += 0.005;
+    camera.rot += (cameraRotDest - camera.rot) / 300;
     if (frame > menu.nextRefocus) {
       menu.nextRefocus = frame + 300;
       menu.focusX = Math.random() * 400 - 200;
@@ -164,6 +164,7 @@ function paint() {
       cameraDist = Math.random() * 400 - 200;
       GROUND_Y = Math.random() * 80 + 10;
       camera.rot = Math.atan2(-menu.focusX, -menu.focusZ);
+      cameraRotDest = camera.rot + Math.PI / 2;
     }
     ({paths, objects} = calculate3D([], menu.objects, menu.focusX, menu.focusZ));
   } else if (mode === 'play-again') {

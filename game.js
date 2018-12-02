@@ -25,7 +25,11 @@ function die(manner) {
 }
 
 function movePlayer() {
-  shakeRadius *= 0.9;
+  if (player.speedy) {
+    shakeRadius += (10 - shakeRadius) * 0.9;
+  } else {
+    shakeRadius *= 0.9;
+  }
   if (player.seeCC) {
     player.y = GROUND_Y;
     const cc = currentMap.objects[currentMap.objects.length - 1];
@@ -121,9 +125,10 @@ function movePlayer() {
       }
     }
   }
-  if (!player.invincible) currentMap.objects.filter(({z}) => z < player.z + 10).forEach(obj => {
+  currentMap.objects.filter(({z}) => z < player.z + 10).forEach(obj => {
     if (obj.hit) return;
     obj.hit = true;
+    if (player.invincible) return;
     switch (obj.type) {
       case 'extra_life':
       case 'super_speed':

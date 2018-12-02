@@ -33,6 +33,12 @@
         <p>This is a Gunn-themed version of Temple Run but with very, very bad graphics. You, a student, attempt to escape SELF, but Curlymango starts chasing you. You try to outrun her, but she's surprisingly resilient.</p>
         <p>This game is open-sourced on <a href="https://github.com/SheepTester/fun-gunn-run" class="link">Github</a>; bug reports and feature requests can go there. Anyone may (and should) make own version of this game, though please consider crediting the creator or link to this game somewhere.</p>
         <h2>Updates</h2>
+        <p>Update 1</p>
+        <ul>
+          <li>player opacity is editable in options</li>
+          <li>shake effect when in hyperspeed</li>
+          <li>slight adjustment to menu background animation</li>
+        </ul>
         <p>Update pre-5</p>
         <ul>
           <li>leaderboard</li>
@@ -79,6 +85,7 @@
         <p>Quality <input type="text" class="number" id="quality" placeholder="1"> (a number between 0 and 1) This will make the canvas more blurry, so it doesn't have to render with detail.</p>
         <p>Ideal milliseconds for rendering <input type="text" class="number" id="auto-censor" placeholder="10"> (a number between 1 and 16) This automatically adjusts the number of objects rendered such that it should take the ideal amount of time to render.</p>
         <p>Mouse joystick? <input type="checkbox" id="mouse-circle"> This lets you use the touch joystick with the mouse.</p>
+        <p>Player opacity <input type="text" class="number" id="player-opacity" placeholder="0.6"> (a number between 0 and 1) Default is 0.6.</p>
         <p><a class="btn" id="generate-url">generate</a></p>
       </div>
       <button class="btn menu-btn" id="from-options-back">back to menu</button>

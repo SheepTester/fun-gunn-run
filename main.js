@@ -1,8 +1,9 @@
 // URL PARAMETERS
-// quality     - canvas quality
-// skipIntro   - (legacy) skips intro
-// autoCensor  - automatically limits the objects drawn such that it should take the given amount of milliseconds to render them
-// mouseCircle - enables touch circle for mouse
+// quality       - canvas quality
+// skipIntro     - (legacy) skips intro
+// autoCensor    - automatically limits the objects drawn such that it should take the given amount of milliseconds to render them
+// mouseCircle   - enables touch circle for mouse
+// playerOpacity - opacity of player
 const params = {};
 if (window.location.search) {
   window.location.search.slice(1).split('&').forEach(entry => {
@@ -15,10 +16,12 @@ if (window.location.search) {
   });
 }
 
-const VERSION = 'pre-3';
+const VERSION = 1;
 const HIGHSCORE_COOKIE = '[fun-gunn-run] highscore';
 // modified regex from  https://stackoverflow.com/questions/161738/what-is-the-best-regular-expression-to-check-if-a-string-is-a-valid-url#comment19948615_163684
 const urlRegex = /^(https?):\/\/[\-A-Za-z0-9+&@#\/%?=~_|!:,.;]*[\-A-Za-z0-9+&@#\/%=~_|]$/;
+
+const PLAYER_OPACITY = params.playerOpacity ? +params.playerOpacity : 0.6;
 
 let highScore = +localStorage.getItem(HIGHSCORE_COOKIE);
 if (isNaN(highScore)) highScore = 0;
@@ -323,20 +326,24 @@ function init() {
   const qualityInput = document.getElementById('quality');
   const autoCensorInput = document.getElementById('auto-censor');
   const mouseCircleInput = document.getElementById('mouse-circle');
+  const playerOpacityInput = document.getElementById('player-opacity');
   const outputLink = document.getElementById('generate-url');
   if (params.quality) qualityInput.value = params.quality;
   if (params.autoCensor) autoCensorInput.value = params.autoCensor;
   if (params.mouseCircle) mouseCircleInput.checked = true;
+  if (params.playerOpacity) playerOpacityInput.value = params.playerOpacity;
   function updateURL() {
     let params = [];
     if (quality.value) params.push('quality=' + quality.value);
     if (autoCensorInput.value) params.push('autoCensor=' + autoCensorInput.value);
     if (mouseCircleInput.checked) params.push('mouseCircle');
+    if (playerOpacityInput.value) params.push('playerOpacity=' + playerOpacityInput.value);
     outputLink.href = '?' + params.join('&');
   }
   qualityInput.addEventListener('input', updateURL);
   autoCensorInput.addEventListener('input', updateURL);
   mouseCircleInput.addEventListener('change', updateURL);
+  playerOpacityInput.addEventListener('input', updateURL);
   updateURL();
 
   [...document.getElementsByTagName('button'), ...document.getElementsByTagName('input')].forEach(btn => btn.disabled = true);

@@ -289,7 +289,7 @@ function paint() {
       x: player.x,
       y: player.y,
       z: player.z,
-      opacity: player.invincible ? (player.invincibleTimeout - frame < 60 ? (frame % 12 < 6 ? 0.2 : 0.5) : player.invincibleTimeout - frame < 180 ? (frame % 30 < 15 ? 0.2 : 0.5) : 0.2) : 0.5
+      opacity: player.invincible ? (player.invincibleTimeout - frame < 60 ? (frame % 12 < 6 ? 0.2 : PLAYER_OPACITY) : player.invincibleTimeout - frame < 180 ? (frame % 30 < 15 ? 0.2 : PLAYER_OPACITY) : 0.2) : PLAYER_OPACITY
     };
     if (player.ccFallingState === 0) {
       curlymangoBack.z = 100;
@@ -321,7 +321,7 @@ function paint() {
       playerObject.x, playerObject.z
     ));
   } else if (mode.slice(0, 4) === 'menu') {
-    camera.rot += 0.005;
+    camera.rot += (cameraRotDest - camera.rot) / 300;
     if (frame > menu.nextRefocus) {
       menu.nextRefocus = frame + 300;
       menu.focusX = Math.random() * 400 - 200;
@@ -329,6 +329,7 @@ function paint() {
       cameraDist = Math.random() * 400 - 200;
       GROUND_Y = Math.random() * 80 + 10;
       camera.rot = Math.atan2(-menu.focusX, -menu.focusZ);
+      cameraRotDest = camera.rot + Math.PI / 2;
     }
     ({paths, objects} = calculate3D([], menu.objects, menu.focusX, menu.focusZ));
   } else if (mode === 'play-again') {
@@ -530,7 +531,11 @@ function die(manner) {
 }
 
 function movePlayer() {
-  shakeRadius *= 0.9;
+  if (player.speedy) {
+    shakeRadius += (10 - shakeRadius) * 0.9;
+  } else {
+    shakeRadius *= 0.9;
+  }
   if (player.seeCC) {
     player.y = GROUND_Y;
     const cc = currentMap.objects[currentMap.objects.length - 1];
@@ -626,9 +631,10 @@ function movePlayer() {
       }
     }
   }
-  if (!player.invincible) currentMap.objects.filter(({z}) => z < player.z + 10).forEach(obj => {
+  currentMap.objects.filter(({z}) => z < player.z + 10).forEach(obj => {
     if (obj.hit) return;
     obj.hit = true;
+    if (player.invincible) return;
     switch (obj.type) {
       case 'extra_life':
       case 'super_speed':
@@ -792,10 +798,11 @@ function generateMap(zOffset, justTurned = false) {
 
 
 // URL PARAMETERS
-// quality     - canvas quality
-// skipIntro   - (legacy) skips intro
-// autoCensor  - automatically limits the objects drawn such that it should take the given amount of milliseconds to render them
-// mouseCircle - enables touch circle for mouse
+// quality       - canvas quality
+// skipIntro     - (legacy) skips intro
+// autoCensor    - automatically limits the objects drawn such that it should take the given amount of milliseconds to render them
+// mouseCircle   - enables touch circle for mouse
+// playerOpacity - opacity of player
 const params = {};
 if (window.location.search) {
   window.location.search.slice(1).split('&').forEach(entry => {
@@ -808,10 +815,12 @@ if (window.location.search) {
   });
 }
 
-const VERSION = 'pre-3';
+const VERSION = 1;
 const HIGHSCORE_COOKIE = '[fun-gunn-run] highscore';
 // modified regex from  https://stackoverflow.com/questions/161738/what-is-the-best-regular-expression-to-check-if-a-string-is-a-valid-url#comment19948615_163684
 const urlRegex = /^(https?):\/\/[\-A-Za-z0-9+&@#\/%?=~_|!:,.;]*[\-A-Za-z0-9+&@#\/%=~_|]$/;
+
+const PLAYER_OPACITY = params.playerOpacity ? +params.playerOpacity : 0.6;
 
 let highScore = +localStorage.getItem(HIGHSCORE_COOKIE);
 if (isNaN(highScore)) highScore = 0;
@@ -1116,20 +1125,24 @@ function init() {
   const qualityInput = document.getElementById('quality');
   const autoCensorInput = document.getElementById('auto-censor');
   const mouseCircleInput = document.getElementById('mouse-circle');
+  const playerOpacityInput = document.getElementById('player-opacity');
   const outputLink = document.getElementById('generate-url');
   if (params.quality) qualityInput.value = params.quality;
   if (params.autoCensor) autoCensorInput.value = params.autoCensor;
   if (params.mouseCircle) mouseCircleInput.checked = true;
+  if (params.playerOpacity) playerOpacityInput.value = params.playerOpacity;
   function updateURL() {
     let params = [];
     if (quality.value) params.push('quality=' + quality.value);
     if (autoCensorInput.value) params.push('autoCensor=' + autoCensorInput.value);
     if (mouseCircleInput.checked) params.push('mouseCircle');
+    if (playerOpacityInput.value) params.push('playerOpacity=' + playerOpacityInput.value);
     outputLink.href = '?' + params.join('&');
   }
   qualityInput.addEventListener('input', updateURL);
   autoCensorInput.addEventListener('input', updateURL);
   mouseCircleInput.addEventListener('change', updateURL);
+  playerOpacityInput.addEventListener('input', updateURL);
   updateURL();
 
   [...document.getElementsByTagName('button'), ...document.getElementsByTagName('input')].forEach(btn => btn.disabled = true);
