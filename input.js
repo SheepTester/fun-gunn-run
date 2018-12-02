@@ -89,7 +89,8 @@ function initTouch() {
       touchCircle.style.transform = `translate(${initX}px, ${initY}px)`;
       touchCircle.style.backgroundPosition = '0 0';
     }
-  });
+    if (mode === 'game' && e.target.tagName === 'DIV') e.preventDefault();
+  }, {passive: false});
   document.addEventListener('touchmove', e => {
     if (e.touches[0]) {
       const diffX = e.touches[0].clientX - initX;
@@ -115,11 +116,13 @@ function initTouch() {
         touchCircle.style.backgroundPosition = '0 0';
       }
     }
-  });
+    if (mode === 'game' && e.target.tagName === 'DIV') e.preventDefault();
+  }, {passive: false});
   document.addEventListener('touchend', e => {
     if (e.changedTouches[0].identifier === 0) {
       touchCircle.style.display = 'none';
       keys.left = keys.jump = keys.right = keys.ducking = false;
     }
-  });
+    if (mode === 'game' && e.target.tagName === 'DIV') e.preventDefault();
+  }, {passive: false});
 }

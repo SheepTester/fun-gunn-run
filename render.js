@@ -40,10 +40,10 @@ const intro = {
   },
   focusX: 0, focusZ: 0,
   times: {
-    zoomToV1: 1500,
-    studentComeOut: 2000,
-    studentRunAway: 3500,
-    securityCamera: 5000
+    zoomToV1: 90,
+    studentComeOut: 120,
+    studentRunAway: 210,
+    securityCamera: 300
   },
   startTime: null,
   lastTime: null
@@ -78,17 +78,19 @@ const curlymangoBack = {
 for (let i = 30; i--;) menu.objects.push({type: Math.random() < 0.1 ? 'caterpillar_tree' : 'tree', x: Math.random() * 500 - 250, z: Math.random() * 500 - 250});
 const beginningPath = {x: -50, z: -500, width: 100, height: 500};
 let shakeRadius = 0;
+let renderLimit = null;
+let frame = 0;
 function paint() {
   c.clearRect(-cwidth / 2, -cheight / 2, cwidth, cheight);
   const shakeX = Math.random() * shakeRadius * 2 - shakeRadius;
   const shakeY = Math.random() * shakeRadius * 2 - shakeRadius;
 
-  const now = Date.now();
+  frame++;
   let paths, objects;
 
   if (mode === 'game') {
     movePlayer();
-    if (player.dead && keys.skip || now > player.endDeathAnim && player.ccSteps >= 3) {
+    if (player.dead && keys.skip || frame > player.endDeathAnim && player.ccSteps >= 3) {
       return 'menu';
     }
     currentScoreDisplay.textContent = Math.floor(player.score);
@@ -113,7 +115,7 @@ function paint() {
       x: player.x,
       y: player.y,
       z: player.z,
-      opacity: player.invincible ? (player.invincibleTimeout - now < 1000 ? (now % 200 < 100 ? 0.3 : 0.7) : player.invincibleTimeout - now < 3000 ? (now % 500 < 250 ? 0.3 : 0.7) : 0.5) : undefined
+      opacity: player.invincible ? (player.invincibleTimeout - frame < 60 ? (frame % 12 < 6 ? 0.3 : 0.7) : player.invincibleTimeout - frame < 180 ? (frame % 30 < 15 ? 0.3 : 0.7) : 0.5) : undefined
     };
     if (player.ccFallingState === 0) {
       curlymangoBack.z = 100;
@@ -128,7 +130,7 @@ function paint() {
     } else if (player.ccFallingState === 1) {
       if (player.z > 100) player.ccFallingState = 2;
     } else {
-      if (player.lastWhoopsie !== null && now < player.lastWhoopsie + 5000) {
+      if (player.lastWhoopsie !== null && frame < player.lastWhoopsie + 300) {
         curlymangoBack.proximity += (0.5 - curlymangoBack.proximity) / 3;
       } else {
         curlymangoBack.proximity += (1 - curlymangoBack.proximity) / 3;
@@ -146,8 +148,8 @@ function paint() {
     ));
   } else if (mode.slice(0, 4) === 'menu') {
     camera.rot += 0.005;
-    if (now > menu.nextRefocus) {
-      menu.nextRefocus = now + 5000;
+    if (frame > menu.nextRefocus) {
+      menu.nextRefocus = frame + 300;
       menu.focusX = Math.random() * 400 - 200;
       menu.focusZ = Math.random() * 400 - 200;
       cameraDist = Math.random() * 400 - 200;
@@ -157,14 +159,14 @@ function paint() {
     ({paths, objects} = calculate3D([], menu.objects, menu.focusX, menu.focusZ));
   } else if (mode === 'play-again') {
     cameraDist = 500;
-    GROUND_Y = Math.sin(now / 1000) * 30 + 70;
-    camera.rot = Math.PI + Math.sin(now / 700) / 20;
+    GROUND_Y = Math.sin(frame / 60) * 30 + 70;
+    camera.rot = Math.PI + Math.sin(frame / 44) / 20;
     ({paths, objects} = calculate3D(playAgain.paths, playAgain.objects, 0, 0));
   } else if (mode === 'intro') {
     if (keys.skip) {
       return 'game';
     }
-    const progress = now - intro.startTime;
+    const progress = frame - intro.startTime;
     if (progress < intro.times.zoomToV1) {
       cameraDist -= 0.5;
     } else if (progress < intro.times.studentComeOut) {
@@ -194,6 +196,7 @@ function paint() {
     paths = objects = [];
   }
 
+  const start = performance.now();
   c.fillStyle = '#b0a47e';
   paths.forEach(path => {
     c.beginPath();
@@ -201,7 +204,10 @@ function paint() {
     path.slice(1).forEach(({x, y}) => c.lineTo(x + shakeX, y + shakeY))
     c.fill();
   });
-  objects.forEach(obj => {
+  let noRenderUnder = renderLimit === null ? 0 : objects.length - renderLimit;
+  objects.forEach((obj, i) => {
+    if (i < noRenderUnder) return;
+    if (params.autoCensor && obj.type === 'aplus' && obj.scale < 0.7) return;
     if (obj.translucency !== null) c.globalAlpha = obj.translucency;
     const img = imageData[obj.type];
     const width = obj.scale * (customSizes[obj.type] ? customSizes[obj.type][0] : img.width);
@@ -209,4 +215,9 @@ function paint() {
     drawIfInCanvas(img, obj.x - width / 2 + shakeX, obj.y - height + shakeY, width, height);
     if (obj.translucency !== null) c.globalAlpha = 1;
   });
+  const time = performance.now() - start;
+  if (params.autoCensor && time) {
+    if (renderLimit === null) renderLimit = Math.floor(objects.length * +params.autoCensor / time);
+    else renderLimit = Math.floor((objects.length * +params.autoCensor / time + renderLimit) / 2);
+  }
 }

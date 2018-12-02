@@ -9,28 +9,27 @@ function die() {
     player.dead = true;
     player.zv = -8;
     player.ducking = false;
-    player.endDeathAnim = Date.now() + 2000;
+    player.endDeathAnim = frame + 120;
     shakeRadius = 10;
   } else {
     player.lives--;
     livesDisplay.textContent = player.lives;
     player.invincible = true; // should also disable the shop
-    player.invincibleTimeout = Date.now() + 3000;
+    player.invincibleTimeout = frame + 180;
   }
 }
 
 function movePlayer() {
-  const now = Date.now();
   shakeRadius *= 0.9;
   if (player.seeCC) {
     player.y = GROUND_Y;
     const cc = currentMap.objects[currentMap.objects.length - 1];
     cc.z += (player.ccZDest - cc.z) / 3;
-    if (now > player.endDeathAnim && player.ccSteps < 3) {
+    if (frame > player.endDeathAnim && player.ccSteps < 3) {
       player.ccSteps++;
       shakeRadius = player.ccSteps * 10;
       player.ccZDest += 100;
-      player.endDeathAnim = now + 1000;
+      player.endDeathAnim = frame + 60;
     }
     return;
   } else if (player.dead) {
@@ -46,7 +45,7 @@ function movePlayer() {
       player.z += player.zv;
       player.zv *= 0.9;
     }
-    if (shakeRadius < 1 && Math.abs(player.zv) < 1 && now > player.endDeathAnim) {
+    if (shakeRadius < 1 && Math.abs(player.zv) < 1 && frame > player.endDeathAnim) {
       player.seeCC = true;
       shakeRadius = 0;
       cameraRotDest = Math.PI;
@@ -54,11 +53,11 @@ function movePlayer() {
       cameraDistDest = 50;
       currentMap.objects.push({type: 'curlymango', x: 0, z: player.z - 300});
       player.ccZDest = player.z - 300;
-      player.endDeathAnim = now + 1500;
+      player.endDeathAnim = frame + 90;
     }
     return;
   }
-  if (player.invincibleTimeout !== null && now > player.invincibleTimeout) {
+  if (player.invincibleTimeout !== null && frame > player.invincibleTimeout) {
     player.invincibleTimeout = null;
     player.invincible = false;
     player.speedy = false;
@@ -87,7 +86,7 @@ function movePlayer() {
   } else {
     player.x += -player.x / 5;
   }
-  if (player.lastWhoopsie !== null && now < player.lastWhoopsie + 5000) {
+  if (player.lastWhoopsie !== null && frame < player.lastWhoopsie + 300) {
     player.z += 0.5 * player.speed;
     player.score += 0.5 * player.speed;
   } else {
@@ -139,7 +138,7 @@ function movePlayer() {
             case 'super_speed':
               player.invincible = true;
               player.speedy = true;
-              player.invincibleTimeout = now + 10000;
+              player.invincibleTimeout = frame + 600;
               break;
             case 'turtle':
               player.speed = Math.max(player.speed - SPEED_DECREASE, 0);
@@ -165,8 +164,8 @@ function movePlayer() {
       case 'backpack':
         if ((obj.x < 0 && player.x < 25 || obj.x > 0 && player.x > -25) && player.y > 50) {
           if (!player.invincible) {
-            if (player.lastWhoopsie === null || now > player.lastWhoopsie + 5000) {
-              player.lastWhoopsie = now;
+            if (player.lastWhoopsie === null || frame > player.lastWhoopsie + 300) {
+              player.lastWhoopsie = frame;
             } else {
               die('backpack');
             }

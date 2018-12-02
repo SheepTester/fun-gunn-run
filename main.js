@@ -1,6 +1,7 @@
 // URL PARAMETERS
-// quality   - canvas quality
-// skipIntro - (legacy) skips intro
+// quality    - canvas quality
+// skipIntro  - (legacy) skips intro
+// autoCensor - automatically limits the objects drawn such that it should take the given amount of milliseconds to render them
 const params = {};
 if (window.location.search) {
   window.location.search.slice(1).split('&').forEach(entry => {
@@ -35,7 +36,7 @@ function startGameIntro() {
   cameraDist = 350;
   camera.rot = 0;
   GROUND_Y = 50;
-  intro.startTime = Date.now();
+  intro.startTime = frame;
   intro.lastTime = null;
   intro.objects.student.x = 75;
   intro.objects.student.z = 1;
@@ -73,7 +74,7 @@ function init() {
       player.coins -= PRICES.speedy;
       player.invincible = true;
       player.speedy = true;
-      player.invincibleTimeout = Date.now() + 10000;
+      player.invincibleTimeout = frame + 600;
     }
   });
   lifeBtn.addEventListener('click', e => {
