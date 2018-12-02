@@ -1,3 +1,5 @@
+(() => {
+
 const keys = {
   jump: false,
   left: false,
@@ -133,6 +135,8 @@ function initTouch() {
     if (mode === 'game' && e.target.tagName === 'DIV') e.preventDefault();
   }, {passive: false});
 }
+
+
 const customSizes = {
   aplus: [20, 20],
   v1: [450, 175],
@@ -365,6 +369,8 @@ function paint() {
     else renderLimit = Math.floor((objects.length * +params.autoCensor / time + renderLimit) / 2);
   }
 }
+
+
 const NEAR_PLANE = 10;
 const VIEW_FACTOR = 500;
 const ACTUAL_GROUND_Y = 75;
@@ -467,6 +473,8 @@ function calculate3D(paths, objects, focusX, focusZ) {
     objects: objects
   };
 }
+
+
 const CHUNK_SIZE = 2500;
 
 let player;
@@ -753,6 +761,8 @@ function generateMap(zOffset, justTurned = false) {
   }
   return map;
 }
+
+
 // URL PARAMETERS
 // quality    - canvas quality
 // skipIntro  - (legacy) skips intro
@@ -979,3 +989,6 @@ function init() {
 }
 
 document.addEventListener('DOMContentLoaded', init, {once: true});
+
+
+})();
