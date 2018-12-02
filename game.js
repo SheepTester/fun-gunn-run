@@ -3,6 +3,7 @@ const CHUNK_SIZE = 2500;
 let player;
 
 function die() {
+  skipEndBtn.style.opacity = null;
   player.dead = true;
   player.zv = -8;
   player.ducking = false;
@@ -156,6 +157,7 @@ function reset() {
   };
   currentMap = nextMap = null;
   updateMap();
+  skipEndBtn.style.opacity = 0;
 }
 function updateMap(justTurned = false) {
   if (nextMap) {

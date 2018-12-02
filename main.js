@@ -1,5 +1,6 @@
 // URL PARAMETERS
-// quality - canvas quality
+// quality   - canvas quality
+// skipIntro - (legacy) skips intro
 const params = {};
 if (window.location.search) {
   window.location.search.slice(1).split('&').forEach(entry => {
@@ -46,7 +47,10 @@ function startGame() {
   curlymangoBack.proximity = 1;
 }
 
+let skipEndBtn;
 function init() {
+  initTouch();
+
   const canvas = document.getElementById('canvas');
   c = canvas.getContext('2d');
   function resize() {
@@ -63,6 +67,12 @@ function init() {
   window.addEventListener('resize', resize);
 
   const score = document.getElementById('score');
+  function playAgain() {
+    setMode('play-again');
+    GROUND_Y = groundYDest = 40;
+    shakeRadius = 0;
+    score.textContent = player.score;
+  }
 
   let paused = false;
   let animID = null;
@@ -70,10 +80,7 @@ function init() {
     const returnVal = paint();
     switch (returnVal) {
       case 'menu':
-        setMode('play-again');
-        GROUND_Y = groundYDest = 40;
-        shakeRadius = 0;
-        score.textContent = player.score;
+        playAgain();
         break;
       case 'game':
         shakeRadius = 0;
@@ -100,6 +107,16 @@ function init() {
   });
   document.getElementById('menu-btn').addEventListener('click', e => {
     setMode('menu');
+  });
+  document.getElementById('skip-intro').addEventListener('click', e => {
+    shakeRadius = 0;
+    startGame();
+  });
+  skipEndBtn = document.getElementById('skip-end');
+  skipEndBtn.addEventListener('click', e => {
+    if (player.dead) {
+      playAgain();
+    }
   });
 
   Array.from(document.getElementsByTagName('button')).forEach(btn => btn.disabled = true);

@@ -25,7 +25,11 @@ body {
   background-color: #988d74;
 }
 
-.menu #menu, .play-again #play-again {
+.hidden {
+  display: none;
+}
+
+.menu #menu, .play-again #play-again, .intro #intro, .game #game {
   display: flex;
 }
 
@@ -55,12 +59,13 @@ button {
 .btn {
   border: none;
   background-color: rgba(0, 0, 0, 0.7);
-  font-size: 24px;
+  font-size: 16px;
   cursor: pointer;
   border-radius: 5px;
   transition: background-color .2s;
   color: rgba(255, 255, 255, 0.8);
   text-transform: uppercase;
+  padding: 5px 10px;
 }
 .btn:not(.disabled):hover {
   background-color: rgba(0, 0, 0, 0.9);
@@ -80,6 +85,16 @@ button {
   margin: 10px 0;
   padding: 10px 0;
 }
+.transparent {
+  background-color: transparent;
+  transition: letter-spacing .2s;
+  text-shadow: 0 0 3px rgba(0, 0, 0, 0.8);
+}
+.btn.transparent:hover {
+  color: white;
+  background-color: transparent;
+  letter-spacing: 3px;
+}
 .score-label {
   font-size: 20px;
   margin: 0;
@@ -87,4 +102,21 @@ button {
 #score {
   font-size: 60px;
   margin: 0;
+}
+#intro, #game {
+  justify-content: flex-end;
+}
+
+#touch-circle {
+  display: none;
+  pointer-events: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 130px;
+  height: 130px;
+  margin: -65px;
+  background-image: url('./images/touch-circle.svg');
+  background-size: 270px;
+  background-repeat: no-repeat;
 }

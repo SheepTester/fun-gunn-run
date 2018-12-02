@@ -16,11 +16,10 @@ function readdir(dir, contents) {
   })
 }
 
-const ignore = ['README.md', 'textureatlasifier.js', 'textureatlas.svg', 'textureatlas.json'];
-
 const widthHeightRegex = /width="([0-9.]+)" height="([0-9.]+)"/;
 
 (async () => {
+  const ignore = (await read('./images/ignore')).split(/\r?\n/);
   const images = (await readdir('./images/')).filter(filename => !ignore.includes(filename));
   let y = 0, maxWidth = 0;
   let svgs = '';
