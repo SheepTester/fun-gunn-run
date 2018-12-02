@@ -3,7 +3,14 @@ const customSizes = {
   v1: [450, 175],
   super_speed: [25, 20],
   extra_life: [25, 25],
-  turtle: [28, 16]
+  turtle: [28, 16],
+  player: [36, 75],
+  player_walk1: [36, 75],
+  player_walk2: [36, 75],
+  ducking: [36, 75],
+  duck1: [36, 75],
+  duck2: [36, 75],
+  student_front: [36, 75]
 };
 let imageData, masterSVG;
 
@@ -35,7 +42,7 @@ const intro = {
   ],
   objects: {
     classroom: {type: 'v1', x: 0, z: 0},
-    student: {type: 'player_temp', x: 75, z: 1},
+    student: {type: 'student_front', x: 75, z: 1},
     camera: {type: 'security_camera', x: -130, y: -110, z: -5, relativeY: true}
   },
   focusX: 0, focusZ: 0,
@@ -53,7 +60,7 @@ const playAgain = {
     {type: 'curlymango_normal', x: 0, z: 0},
     {type: 'desk', x: 0, z: 50},
     {type: 'jail_bars', x: 0, z: 250},
-    {type: 'player_temp', x: 0, z: 300},
+    {type: 'student_front', x: 0, z: 300},
     {type: 'jail_bars', x: 0, z: 350},
     {type: 'jail_bar', x: -50, z: 300},
     {type: 'jail_bar', x: 50, z: 300},
@@ -80,6 +87,8 @@ const beginningPath = {x: -50, z: -500, width: 100, height: 500};
 let shakeRadius = 0;
 let renderLimit = null;
 let frame = 0;
+const playerWalkCycle = ['player', 'player_walk1', 'player', 'player_walk2'];
+const playerDuckCycle = ['ducking', 'duck1', 'ducking', 'duck2'];
 function paint() {
   c.clearRect(-cwidth / 2, -cheight / 2, cwidth, cheight);
   const shakeX = Math.random() * shakeRadius * 2 - shakeRadius;
@@ -111,11 +120,11 @@ function paint() {
       if (resetBtn.classList.contains('disabled')) resetBtn.classList.remove('disabled');
     }
     const playerObject = {
-      type: player.ducking ? 'player_ducking' : 'player_temp',
+      type: player.dead ? 'player' : (player.ducking ? playerDuckCycle : playerWalkCycle)[Math.floor(frame / 15) % 4],
       x: player.x,
       y: player.y,
       z: player.z,
-      opacity: player.invincible ? (player.invincibleTimeout - frame < 60 ? (frame % 12 < 6 ? 0.3 : 0.7) : player.invincibleTimeout - frame < 180 ? (frame % 30 < 15 ? 0.3 : 0.7) : 0.5) : undefined
+      opacity: player.invincible ? (player.invincibleTimeout - frame < 60 ? (frame % 12 < 6 ? 0.2 : 0.5) : player.invincibleTimeout - frame < 180 ? (frame % 30 < 15 ? 0.2 : 0.5) : 0.2) : 0.5
     };
     if (player.ccFallingState === 0) {
       curlymangoBack.z = 100;

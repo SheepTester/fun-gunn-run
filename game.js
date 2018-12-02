@@ -11,6 +11,9 @@ function die() {
     player.ducking = false;
     player.endDeathAnim = frame + 120;
     shakeRadius = 10;
+    speedyBtn.disabled = true;
+    lifeBtn.disabled = true;
+    resetBtn.disabled = true;
   } else {
     player.lives--;
     livesDisplay.textContent = player.lives;
@@ -116,7 +119,7 @@ function movePlayer() {
       }
     }
   }
-  currentMap.objects.filter(({z}) => z < player.z + 10).forEach(obj => {
+  if (!player.invincible) currentMap.objects.filter(({z}) => z < player.z + 10).forEach(obj => {
     if (obj.hit) return;
     obj.hit = true;
     switch (obj.type) {
@@ -163,12 +166,10 @@ function movePlayer() {
         break;
       case 'backpack':
         if ((obj.x < 0 && player.x < 25 || obj.x > 0 && player.x > -25) && player.y > 50) {
-          if (!player.invincible) {
-            if (player.lastWhoopsie === null || frame > player.lastWhoopsie + 300) {
-              player.lastWhoopsie = frame;
-            } else {
-              die('backpack');
-            }
+          if (player.lastWhoopsie === null || frame > player.lastWhoopsie + 300) {
+            player.lastWhoopsie = frame;
+          } else {
+            die('backpack');
           }
         }
         break;
