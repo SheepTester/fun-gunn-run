@@ -30,8 +30,9 @@ body {
 }
 
 .menu #menu, .menu-options #menu-options, .menu-about #menu-about,
-.menu-help #menu-help, .play-again #play-again, .intro #intro, .game #game {
-  display: flex;
+.menu-help #menu-help, .play-again #play-again, .intro #intro, .game #game,
+.menu-leaderboard #menu-leaderboard {
+  display: flex; /* weird */
 }
 
 .container {
@@ -83,7 +84,7 @@ body {
   font-size: 16px;
   margin-top: 15px;
 }
-.text-container a {
+.link {
   color: white;
   text-shadow: 0 0 10px white;
 }
@@ -116,24 +117,49 @@ body {
 #submit-score {
   flex: none;
 }
-input {
+input, select {
   border: none;
   background: none;
   background-color: rgba(0, 0, 0, 0.5);
   color: white;
   font: inherit;
   font-size: 16px;
-  padding: 10px;
+  padding: 5px;
   border-radius: 5px;
-  margin-right: 10px;
   cursor: pointer;
-  flex: auto;
-  width: 0;
 }
-input:focus {
+input:focus, select:focus {
   outline: none;
   background-color: rgba(0, 0, 0, 0.7);
   cursor: auto;
+}
+.number {
+  width: 4ch;
+}
+input[type=checkbox] {
+  -webkit-appearance: none;
+  display: inline-block;
+  width: 1em;
+  height: 1em;
+  background-image: url('./images/checkbox_no.svg');
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: contain;
+  margin: 0;
+  padding: 0;
+  border-radius: 0;
+}
+input[type=checkbox]:focus {
+  cursor: pointer;
+}
+input[type=checkbox]:checked {
+  background-image: url('./images/checkbox_yes.svg');
+}
+#docs-link {
+  flex: auto;
+  width: 0;
+  margin-right: 10px;
+  padding: 10px;
 }
 button {
   font: inherit;
@@ -148,6 +174,7 @@ button {
   color: rgba(255, 255, 255, 0.8);
   text-transform: uppercase;
   padding: 5px 10px;
+  text-decoration: none;
 }
 .btn:not(.disabled):not(:disabled):hover {
   background-color: rgba(0, 0, 0, 0.9);
@@ -187,6 +214,10 @@ button {
   background-color: rgba(255, 255, 255, 0.2);
 }
 .score-label {
+  font-size: 20px;
+  margin: 0;
+}
+#highscore {
   font-size: 20px;
   margin: 0;
 }
@@ -305,4 +336,82 @@ button {
   margin-left: 10px;
   margin-top: 5px;
   text-shadow: 0 0 3px black;
+}
+
+#leaderboard-container {
+  font-size: 16px;
+  text-align: center;
+}
+.fetch-again-btn {
+  display: block;
+  margin: 0 auto;
+}
+.leaderboard-item {
+  display: block;
+  background-color: rgba(0, 0, 0, 0.5);
+  padding: 20px;
+  border-radius: 5px;
+  text-align: left;
+  color: white;
+  text-decoration: none;
+  line-height: 1;
+  margin-top: 10px;
+  transition: box-shadow .2s;
+  background-position: 90% 50%;
+  background-size: 96px;
+  background-repeat: no-repeat;
+}
+.leaderboard-item:hover {
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.4);
+}
+.death-by-backpack { background-image: url('./images/backpack.svg'); }
+.death-by-fence { background-image: url('./images/construction_fence.svg'); }
+.death-by-cart { background-image: url('./images/trash_cart.svg'); }
+.death-by-tree { background-image: url('./images/caterpillar_tree.svg'); }
+.death-by-sign { background-image: url('./images/hailself.svg'); }
+.leaderboard-item span {
+  display: block;
+}
+.coins {
+  background-image: url('./images/aplus.svg');
+  background-repeat: no-repeat;
+  background-position: left center;
+  background-size: 12px;
+  padding-left: 18px;
+  color: rgba(255, 255, 255, 0.7);
+}
+.score {
+  font-size: 36px;
+}
+.time {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 10px;
+  margin-top: 5px;
+}
+.url {
+  max-width: 50vw;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: rgba(255, 255, 255, 0.3);
+  font-size: 8px;
+  margin-top: 5px;
+}
+p.sort-label {
+  text-align: right;
+  font-size: 16px;
+  margin-top: -10px;
+}
+
+.preloader {
+  position: fixed;
+  width: 1px;
+  height: 1px;
+  opacity: 0.1;
+  background-image: url('./images/touch-circle.svg'), url('./images/aplus.svg'),
+    url('./images/aplus.svg'), url('./images/super_speed.svg'),
+    url('./images/extra_life.svg'), url('./images/turtle.svg'),
+    url('./images/backpack.svg'), url('./images/construction_fence.svg'),
+    url('./images/trash_cart.svg'), url('./images/caterpillar_tree.svg'),
+    url('./images/hailself.svg'), url('./images/aplus.svg'),
+    url('./images/checkbox_no.svg'), url('./images/checkbox_yes.svg');
 }

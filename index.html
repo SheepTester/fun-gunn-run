@@ -3,18 +3,18 @@
   <head>
     <title>"Fun" Gunn Run</title>
     <meta charset="UTF-8">
-    <meta name="description" content="A Gunn-themed temple run game with bad 3D graphics"/>
+    <meta name="description" content="A Gunn-themed temple run game with bad 3D graphics."/>
     <meta name="viewport" content="width=device-width, initial-scale=1"/>
     <!-- <link rel="stylesheet" type="text/css" href="../sheep2.css">
     <script src="../sheep2.js" charset="utf-8"></script> -->
     <link rel="stylesheet" href="./styles.css">
     <link href="https://fonts.googleapis.com/css?family=Montserrat" rel="stylesheet">
-    <!-- <script src="./input.js" charset="utf-8"></script>
+    <script src="./input.js" charset="utf-8"></script>
     <script src="./render.js" charset="utf-8"></script>
     <script src="./positioning.js" charset="utf-8"></script>
     <script src="./game.js" charset="utf-8"></script>
-    <script src="./main.js" charset="utf-8"></script> -->
-    <script src="./everything.js" charset="utf-8"></script>
+    <script src="./main.js" charset="utf-8"></script>
+    <!-- <script src="./everything.js" charset="utf-8"></script> -->
   </head>
   <body class="menu">
     <div class="ground"></div>
@@ -22,17 +22,23 @@
     <div class="container" id="menu">
       <img src="./images/dumb-logo.svg" alt="&quot;Fun&quot; Gunn Run - SELF escapee training" class="game-title">
       <button class="btn menu-btn" id="play">play</button>
-      <button class="btn menu-btn disabled" id="options">options</button>
-      <button class="btn menu-btn" id="about">about</button>
       <button class="btn menu-btn" id="help">help</button>
-      <button class="btn menu-btn disabled" id="leaderboard">leaderboard</button>
+      <button class="btn menu-btn" id="leaderboard">leaderboard</button>
+      <button class="btn menu-btn" id="options">options</button>
+      <button class="btn menu-btn" id="about">about</button>
     </div>
     <div class="container" id="menu-about">
       <div class="text-container">
         <h1>About</h1>
         <p>This is a Gunn-themed version of Temple Run but with very, very bad graphics. You, a student, attempt to escape SELF, but Curlymango starts chasing you. You try to outrun her, but she's surprisingly resilient.</p>
-        <p>This game is open-sourced on <a href="https://github.com/SheepTester/fun-gunn-run">Github</a>; bug reports and feature requests can go there. Anyone may (and should) make own version of this game, though please consider crediting the creator or link to this game somewhere.</p>
+        <p>This game is open-sourced on <a href="https://github.com/SheepTester/fun-gunn-run" class="link">Github</a>; bug reports and feature requests can go there. Anyone may (and should) make own version of this game, though please consider crediting the creator or link to this game somewhere.</p>
         <h2>Updates</h2>
+        <p>Update pre-5</p>
+        <ul>
+          <li>leaderboard</li>
+          <li>high score</li>
+          <li>functional options page</li>
+        </ul>
         <p>Update pre-4</p>
         <ul>
           <li>support for leaderboard</li>
@@ -66,11 +72,36 @@
       </div>
       <button class="btn menu-btn" id="from-help-back">back to menu</button>
     </div>
+    <div class="container" id="menu-options">
+      <div class="text-container">
+        <h1>Options</h1>
+        <p>The game stores options in the URL; the following generates one.</p>
+        <p>Quality <input type="text" class="number" id="quality" placeholder="1"> (a number between 0 and 1) This will make the canvas more blurry, so it doesn't have to render with detail.</p>
+        <p>Ideal milliseconds for rendering <input type="text" class="number" id="auto-censor" placeholder="10"> (a number between 1 and 16) This automatically adjusts the number of objects rendered such that it should take the ideal amount of time to render.</p>
+        <p>Mouse joystick? <input type="checkbox" id="mouse-circle"> This lets you use the touch joystick with the mouse.</p>
+        <p><a class="btn" id="generate-url">generate</a></p>
+      </div>
+      <button class="btn menu-btn" id="from-options-back">back to menu</button>
+    </div>
+    <div class="container" id="menu-leaderboard">
+      <div class="text-container">
+        <h1>Leaderboard</h1>
+        <p class="sort-label">Sort by <select id="sort" disabled>
+          <option value="score" selected>score</option>
+          <option value="coins">coins</option>
+          <option value="time">time</option>
+          <option value="manner">manner</option>
+        </select></span>
+        <div id="leaderboard-container"></div>
+      </div>
+      <button class="btn menu-btn" id="from-leaderboard-back">back to menu</button>
+    </div>
     <div class="container" id="play-again">
       <p class="score-label">score</p>
       <p id="score">0</p>
+      <p id="highscore"></p>
       <button class="btn menu-btn" id="play-again-btn">fail again</button>
-      <p class="submit-score-label">Submit your score with an HTTPS link to a Google doc that you identify with most (your IP address will be stored, but not publicized):</p>
+      <p class="submit-score-label">Submit your score with a link to your Schoology profile/a social media account (your IP address will be stored, but not publicized):</p>
       <div class="submit-score-container">
         <input type="text" placeholder="https://docs.google.com/document/d/" id="docs-link">
         <button class="btn" id="submit-score">submit</button>
@@ -94,5 +125,6 @@
       <button class="btn border" id="skip-end">skip</button>
     </div>
     <div id="touch-circle"></div>
+    <span class="preloader"></span>
   </body>
 </html>

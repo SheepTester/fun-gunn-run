@@ -82,6 +82,13 @@ const CIRCLE_SIZE = -140;
 function initTouch() {
   const touchCircle = document.getElementById('touch-circle');
   let initX, initY;
+  function touchCircleDown(clientX, clientY) {
+    touchCircle.style.display = 'block';
+    initX = clientX;
+    initY = clientY;
+    touchCircle.style.transform = `translate(${initX}px, ${initY}px)`;
+    touchCircle.style.backgroundPosition = '0 0';
+  }
   function doCircles(clientX, clientY) {
     const diffX = clientX - initX;
     const diffY = clientY - initY;
@@ -110,11 +117,7 @@ function initTouch() {
   document.addEventListener('touchstart', e => {
     if (touch === null) {
       touch = e.changedTouches[0].identifier;
-      touchCircle.style.display = 'block';
-      initX = e.touches[0].clientX;
-      initY = e.touches[0].clientY;
-      touchCircle.style.transform = `translate(${initX}px, ${initY}px)`;
-      touchCircle.style.backgroundPosition = '0 0';
+      touchCircleDown(e.touches[0].clientX, e.touches[0].clientY);
     }
     if (mode === 'game' && e.target.tagName === 'DIV') e.preventDefault();
   }, {passive: false});
@@ -132,4 +135,27 @@ function initTouch() {
     }
     if (mode === 'game' && e.target.tagName === 'DIV') e.preventDefault();
   }, {passive: false});
+  if (params.mouseCircle) {
+    document.addEventListener('mousedown', e => {
+      if (touch === null) {
+        touch = 'mouse';
+        touchCircleDown(e.clientX, e.clientY);
+      }
+      if (mode === 'game' && e.target.tagName === 'DIV') e.preventDefault();
+    });
+    document.addEventListener('mousemove', e => {
+      if ('mouse' === touch) {
+        doCircles(e.clientX, e.clientY);
+      }
+      if (mode === 'game' && e.target.tagName === 'DIV') e.preventDefault();
+    });
+    document.addEventListener('mouseup', e => {
+      if ('mouse' === touch) {
+        touchCircle.style.display = 'none';
+        keys.left = keys.jump = keys.right = keys.ducking = false;
+        touch = null;
+      }
+      if (mode === 'game' && e.target.tagName === 'DIV') e.preventDefault();
+    });
+  }
 }

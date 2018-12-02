@@ -19,9 +19,9 @@ function loadImages() {
     new Promise(res => {
       masterSVG = new Image();
       masterSVG.onload = res;
-      masterSVG.src = `./images/textureatlas.svg`;
+      masterSVG.src = `./images/textureatlas.svg?v=${VERSION}`;
     }),
-    fetch('./images/textureatlas.json').then(r => r.json()).then(json => imageData = json)
+    fetch('./images/textureatlas.json?v=' + VERSION).then(r => r.json()).then(json => imageData = json)
   ]);
 }
 function drawIfInCanvas(img, x, y, width, height) {
@@ -214,19 +214,21 @@ function paint() {
     c.fill();
   });
   let noRenderUnder = renderLimit === null ? 0 : objects.length - renderLimit;
+  let objectsRendered = 0;
   objects.forEach((obj, i) => {
     if (i < noRenderUnder) return;
     if (params.autoCensor && obj.type === 'aplus' && obj.scale < 0.7) return;
+    objectsRendered++;
     if (obj.translucency !== null) c.globalAlpha = obj.translucency;
     const img = imageData[obj.type];
     const width = obj.scale * (customSizes[obj.type] ? customSizes[obj.type][0] : img.width);
-    const height = obj.scale * (customSizes[obj.type] ? customSizes[obj.type][1] : img.height); // support for diff. ratios?
+    const height = obj.scale * (customSizes[obj.type] ? customSizes[obj.type][1] : img.height);
     drawIfInCanvas(img, obj.x - width / 2 + shakeX, obj.y - height + shakeY, width, height);
     if (obj.translucency !== null) c.globalAlpha = 1;
   });
   const time = performance.now() - start;
   if (params.autoCensor && time) {
-    if (renderLimit === null) renderLimit = Math.floor(objects.length * +params.autoCensor / time);
-    else renderLimit = Math.floor((objects.length * +params.autoCensor / time + renderLimit) / 2);
+    if (renderLimit === null) renderLimit = Math.floor(objectsRendered * +params.autoCensor / time);
+    else renderLimit = Math.floor((objectsRendered * +params.autoCensor / time + renderLimit) / 2);
   }
 }
