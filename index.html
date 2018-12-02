@@ -9,23 +9,18 @@
     <script src="../sheep2.js" charset="utf-8"></script> -->
     <link rel="stylesheet" href="./styles.css">
     <link href="https://fonts.googleapis.com/css?family=Montserrat" rel="stylesheet">
-    <!-- <script src="./input.js" charset="utf-8"></script>
+    <script src="./input.js" charset="utf-8"></script>
     <script src="./render.js" charset="utf-8"></script>
     <script src="./positioning.js" charset="utf-8"></script>
     <script src="./game.js" charset="utf-8"></script>
-    <script src="./main.js" charset="utf-8"></script> -->
-    <script src="./everything.js" charset="utf-8"></script>
+    <script src="./main.js" charset="utf-8"></script>
   </head>
   <body class="menu">
     <div class="ground"></div>
     <canvas id="canvas"></canvas>
     <div class="container" id="menu">
-      <img src="./images/dumb-logo.svg" alt="&quot;Fun&quot; Gunn Run - SELF escapee training" class="game-title">
+      <p class="game-title">&quot;Fun&quot; Gunn Run - SELF escapee training<br>PRESENTATION MODE</p>
       <button class="btn menu-btn" id="play">play</button>
-      <button class="btn menu-btn" id="help">help</button>
-      <button class="btn menu-btn" id="leaderboard">leaderboard</button>
-      <button class="btn menu-btn" id="options">options</button>
-      <button class="btn menu-btn" id="about">about</button>
     </div>
     <div class="container" id="menu-about">
       <div class="text-container">
@@ -113,6 +108,7 @@
       <button class="btn border" id="skip-intro">skip</button>
     </div>
     <div class="container" id="game">
+      <img src="./images/dumb-logo.svg" class="game-title" id="title">
       <div class="game-ui">
         <div class="scores">
           <span id="current-score">5820</span>

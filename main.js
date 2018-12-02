@@ -23,28 +23,6 @@ const urlRegex = /^(https?):\/\/[\-A-Za-z0-9+&@#\/%?=~_|!:,.;]*[\-A-Za-z0-9+&@#\
 let highScore = +localStorage.getItem(HIGHSCORE_COOKIE);
 if (isNaN(highScore)) highScore = 0;
 
-function sendScore(userUrl) {
-  return fetch('https://test-9d9aa.firebaseapp.com/newFGRScore', {
-    headers: { 'Content-Type': 'application/json; charset=utf-8' },
-    method: 'POST',
-    body: JSON.stringify({
-      score: Math.floor(player.score),
-      manner: player.deathManner || 'unknown',
-      coins: player.coins,
-      lives: player.lives,
-      time: player.deathDate,
-      url: userUrl,
-      version: VERSION
-    })
-  }).then(res => {
-    if (res.status === 200) {
-      return Promise.resolve();
-    } else {
-      return Promise.reject();
-    }
-  });
-}
-
 let cwidth, cheight;
 let c;
 let mode;
@@ -146,7 +124,7 @@ function init() {
     if (score > highScore) {
       highscoreElem.textContent = `you beat your high score! (it was ${highScore})`;
       highScore = score;
-      localStorage.setItem(HIGHSCORE_COOKIE, highScore);
+      // localStorage.setItem(HIGHSCORE_COOKIE, highScore);
     } else if (score === highScore) {
       highscoreElem.textContent = 'you almost beat your high score D:';
     } else {
@@ -193,35 +171,7 @@ function init() {
   playBtn.addEventListener('click', startGameIntro);
   playAgainBtn.addEventListener('click', startGameIntro);
   const playAgainToMenu = document.getElementById('menu-btn');
-  const helpToMenu = document.getElementById('from-help-back');
-  const aboutToMenu = document.getElementById('from-about-back');
-  const optionsToMenu = document.getElementById('from-options-back');
-  const leaderboardToMenu = document.getElementById('from-leaderboard-back');
   playAgainToMenu.addEventListener('click', toMenu);
-  helpToMenu.addEventListener('click', toMenu);
-  aboutToMenu.addEventListener('click', toMenu);
-  optionsToMenu.addEventListener('click', toMenu);
-  leaderboardToMenu.addEventListener('click', () => {
-    sortDropdown.disabled = true;
-    toMenu();
-  });
-  document.getElementById('help').addEventListener('click', e => {
-    setMode('menu-help');
-    currentBackMenu = helpToMenu;
-  });
-  document.getElementById('about').addEventListener('click', e => {
-    setMode('menu-about');
-    currentBackMenu = aboutToMenu;
-  });
-  document.getElementById('options').addEventListener('click', e => {
-    setMode('menu-options');
-    currentBackMenu = optionsToMenu;
-  });
-  document.getElementById('leaderboard').addEventListener('click', e => {
-    setMode('menu-leaderboard');
-    currentBackMenu = leaderboardToMenu;
-    fetchLeaderboard();
-  });
   document.getElementById('skip-intro').addEventListener('click', e => {
     shakeRadius = 0;
     startGame();
@@ -232,112 +182,6 @@ function init() {
       playAgain();
     }
   });
-
-  const docsLink = document.getElementById('docs-link');
-  const error = document.getElementById('error');
-  const scoreSubmitBtn = document.getElementById('submit-score');
-  scoreSubmitBtn.addEventListener('click', e => {
-    if (urlRegex.test(docsLink.value)) {
-      scoreSubmitBtn.disabled = true;
-      sendScore(docsLink.value).then(() => {
-        setMode('menu-leaderboard');
-        fetchLeaderboard();
-      }).catch(() => {
-        error.classList.remove('hidden');
-        error.textContent = 'Something went wrong.';
-        scoreSubmitBtn.disabled = false;
-      });
-    } else {
-      error.classList.remove('hidden');
-      error.textContent = 'This is not a link.';
-    }
-  });
-
-  const leaderboardContainer = document.getElementById('leaderboard-container');
-  const sortDropdown = document.getElementById('sort');
-  const fetchBtn = document.createElement('button');
-  fetchBtn.classList.add('btn');
-  fetchBtn.classList.add('fetch-again-btn');
-  fetchBtn.textContent = 'try again';
-  fetchBtn.addEventListener('click', fetchLeaderboard);
-  sortDropdown.addEventListener('change', renderLeaderboard);
-  const mannerValues = {backpack: 0, sign: 1, tree: 2, fence: 3, cart: 4};
-  let scores;
-  function renderLeaderboard() {
-    leaderboardContainer.innerHTML = '';
-    switch (sortDropdown.value) {
-      case 'coins':
-        scores.sort((a, b) => b.coins - a.coins);
-        break;
-      case 'time':
-        scores.sort((a, b) => b.time - a.time);
-        break;
-      case 'manner':
-        scores.sort((a, b) => a.manner === b.manner ? b.score - a.score : mannerValues[a.manner] - mannerValues[b.manner]);
-        break;
-      default:
-        scores.sort((a, b) => b.score - a.score);
-    }
-    const fragment = document.createDocumentFragment();
-    scores.forEach(({url, time, score, coins, manner}) => {
-      const link = document.createElement('a');
-      link.className = `leaderboard-item death-by-${manner}`;
-      link.href = url;
-      const coinDisplay = document.createElement('span');
-      coinDisplay.className = 'coins';
-      coinDisplay.textContent = coins;
-      link.appendChild(coinDisplay);
-      const scoreDisplay = document.createElement('span');
-      scoreDisplay.className = 'score';
-      scoreDisplay.textContent = score;
-      link.appendChild(scoreDisplay);
-      const timeDisplay = document.createElement('span');
-      timeDisplay.className = 'time';
-      timeDisplay.textContent = new Date(time).toLocaleString();
-      link.appendChild(timeDisplay);
-      const urlDisplay = document.createElement('span');
-      urlDisplay.className = 'url';
-      urlDisplay.textContent = url;
-      link.appendChild(urlDisplay);
-      fragment.appendChild(link);
-    });
-    leaderboardContainer.appendChild(fragment);
-  }
-  function fetchLeaderboard() {
-    if (fetchBtn.parentNode) fetchBtn.parentNode.removeChild(fetchBtn);
-    leaderboardContainer.textContent = 'Fetching leaderboard...';
-    fetch('https://test-9d9aa.firebaseapp.com/getFGRLeaderboard?v=' + Date.now())
-    .then(r => r.status === 200 ? r.json() : Promise.reject())
-    .then(json => {
-      scores = Object.values(json);
-      sortDropdown.disabled = false;
-      renderLeaderboard();
-    })
-    .catch(() => {
-      leaderboardContainer.textContent = 'Fetching failed.';
-      leaderboardContainer.appendChild(fetchBtn);
-      fetchBtn.disabled = false;
-    });
-  }
-
-  const qualityInput = document.getElementById('quality');
-  const autoCensorInput = document.getElementById('auto-censor');
-  const mouseCircleInput = document.getElementById('mouse-circle');
-  const outputLink = document.getElementById('generate-url');
-  if (params.quality) qualityInput.value = params.quality;
-  if (params.autoCensor) autoCensorInput.value = params.autoCensor;
-  if (params.mouseCircle) mouseCircleInput.checked = true;
-  function updateURL() {
-    let params = [];
-    if (quality.value) params.push('quality=' + quality.value);
-    if (autoCensorInput.value) params.push('autoCensor=' + autoCensorInput.value);
-    if (mouseCircleInput.checked) params.push('mouseCircle');
-    outputLink.href = '?' + params.join('&');
-  }
-  qualityInput.addEventListener('input', updateURL);
-  autoCensorInput.addEventListener('input', updateURL);
-  mouseCircleInput.addEventListener('change', updateURL);
-  updateURL();
 
   [...document.getElementsByTagName('button'), ...document.getElementsByTagName('input')].forEach(btn => btn.disabled = true);
   toMenu();
