@@ -221,7 +221,7 @@ function generateMap(zOffset, justTurned = false) {
   let coinStringStop = -1, coinMode;
   for (let z = justTurned ? 300 : 0; z < end - 100; z += 75) {
     if (z > coinStringStop) {
-      coinStringStop = z + Math.random() * 300 + 200;
+      coinStringStop = z + Math.random() * 300 + 400;
       coinMode = Math.floor(Math.random() * 5);
     }
     if (coinMode < 3) {

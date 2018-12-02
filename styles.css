@@ -29,7 +29,8 @@ body {
   display: none;
 }
 
-.menu #menu, .play-again #play-again, .intro #intro, .game #game {
+.menu #menu, .menu-options #menu-options, .menu-about #menu-about,
+.menu-help #menu-help, .play-again #play-again, .intro #intro, .game #game {
   display: flex;
 }
 
@@ -44,6 +45,33 @@ body {
   justify-content: center;
   flex-direction: column;
   text-align: center;
+}
+.text-container {
+  background-color: rgba(0, 0, 0, 0.7);
+  padding: 30px;
+  border-radius: 20px;
+  text-align: left;
+  margin: 10px 10%;
+  color: rgba(255, 255, 255, 0.8);
+  line-height: 1.8;
+  max-height: 70%;
+  overflow: auto;
+  max-width: 700px;
+}
+.text-container h1 {
+  font-weight: normal;
+  font-size: 36px;
+  margin: 0;
+}
+.text-container p {
+  font-size: 16px;
+  margin: 0;
+  margin-top: 15px;
+}
+.text-container code {
+  background-color: rgba(255, 255, 255, 0.2);
+  border-bottom: 3px solid rgba(255, 255, 255, 0.2);
+  padding: 0 5px;
 }
 .game-title {
   font-size: 40px;

@@ -99,14 +99,20 @@ function init() {
   });
   loadImages().then(callPaint);
 
-  document.getElementById('play').addEventListener('click', e => {
-    startGameIntro();
-  });
-  document.getElementById('play-again-btn').addEventListener('click', e => {
-    startGameIntro();
-  });
-  document.getElementById('menu-btn').addEventListener('click', e => {
+  function toMenu() {
     setMode('menu');
+  }
+
+  document.getElementById('play').addEventListener('click', startGameIntro);
+  document.getElementById('play-again-btn').addEventListener('click', startGameIntro);
+  document.getElementById('menu-btn').addEventListener('click', toMenu);
+  document.getElementById('from-help-back').addEventListener('click', toMenu);
+  document.getElementById('from-about-back').addEventListener('click', toMenu);
+  document.getElementById('help').addEventListener('click', e => {
+    setMode('menu-help');
+  });
+  document.getElementById('about').addEventListener('click', e => {
+    setMode('menu-about');
   });
   document.getElementById('skip-intro').addEventListener('click', e => {
     shakeRadius = 0;
