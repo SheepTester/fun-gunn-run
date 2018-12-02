@@ -39,8 +39,8 @@ const intro = {
   times: {
     zoomToV1: 1500,
     studentComeOut: 2000,
-    studentRunAway: 2500,
-    securityCamera: 3500
+    studentRunAway: 3500,
+    securityCamera: 5000
   },
   startTime: null,
   lastTime: null
@@ -101,7 +101,7 @@ function paint() {
       if (curlymangoBack.y >= 0) {
         curlymangoBack.y = 0;
         player.ccFallingState = 1;
-        shakeRadius = 10;
+        shakeRadius = 50;
         cameraDistDest = 200;
       }
     } else if (player.ccFallingState === 1) {
@@ -147,7 +147,7 @@ function paint() {
       cameraDist -= 0.5;
     } else if (progress < intro.times.studentComeOut) {
       if (intro.lastTime !== 'studentComeOut') {
-        shakeRadius = 10;
+        shakeRadius = 20;
         intro.lastTime = 'studentComeOut';
       }
       shakeRadius *= 0.9;

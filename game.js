@@ -111,6 +111,7 @@ function movePlayer() {
           const index = currentMap.objects.indexOf(obj);
           if (~index) currentMap.objects.splice(index, 1);
         }
+        player.coins++;
         break;
       case 'caterpillar_tree':
         if (!player.ducking) {
@@ -152,7 +153,7 @@ function reset() {
     lastWhoopsie: null,
     invincible: false,
     dead: false, seeCC: false, endDeathAnim: null, ccSteps: 0, ccZDest: null,
-    score: 0,
+    score: 0, coins: 0,
     ccFallingState: 0
   };
   currentMap = nextMap = null;
