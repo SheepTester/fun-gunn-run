@@ -87,6 +87,8 @@ const beginningPath = {x: -50, z: -500, width: 100, height: 500};
 let shakeRadius = 0;
 let renderLimit = null;
 let frame = 0;
+let startTime = Date.now();
+const expectedFPS = 60;
 const playerWalkCycle = ['player', 'player_walk1', 'player', 'player_walk2'];
 const playerDuckCycle = ['ducking', 'duck1', 'ducking', 'duck2'];
 function paint() {
@@ -94,117 +96,118 @@ function paint() {
   const shakeX = Math.random() * shakeRadius * 2 - shakeRadius;
   const shakeY = Math.random() * shakeRadius * 2 - shakeRadius;
 
-  frame++;
-  let paths, objects;
+  let paths = [], objects = [];
 
-  if (mode === 'game') {
-    movePlayer();
-    if (player.dead && keys.skip || frame > player.endDeathAnim && player.ccSteps >= 3) {
-      return 'menu';
-    }
-    currentScoreDisplay.textContent = Math.floor(player.score);
-    coinsDisplay.textContent = player.coins;
-    if (player.coins < PRICES.speedy) {
-      if (!speedyBtn.classList.contains('disabled')) speedyBtn.classList.add('disabled');
-    } else {
-      if (speedyBtn.classList.contains('disabled')) speedyBtn.classList.remove('disabled');
-    }
-    if (player.coins < PRICES.life) {
-      if (!lifeBtn.classList.contains('disabled')) lifeBtn.classList.add('disabled');
-    } else {
-      if (lifeBtn.classList.contains('disabled')) lifeBtn.classList.remove('disabled');
-    }
-    if (player.speed < SPEED_DECREASE || player.coins < PRICES.reset) {
-      if (!resetBtn.classList.contains('disabled')) resetBtn.classList.add('disabled');
-    } else {
-      if (resetBtn.classList.contains('disabled')) resetBtn.classList.remove('disabled');
-    }
-    const playerObject = {
-      type: player.dead ? 'player' : (player.ducking ? playerDuckCycle : playerWalkCycle)[Math.floor(frame / 15) % 4],
-      x: player.x,
-      y: player.y,
-      z: player.z,
-      opacity: player.invincible ? (player.invincibleTimeout - frame < 60 ? (frame % 12 < 6 ? 0.2 : PLAYER_OPACITY) : player.invincibleTimeout - frame < 180 ? (frame % 30 < 15 ? 0.2 : PLAYER_OPACITY) : 0.2) : PLAYER_OPACITY
-    };
-    if (player.ccFallingState === 0) {
-      curlymangoBack.z = 100;
-      curlymangoBack.yv += 0.5;
-      curlymangoBack.y += curlymangoBack.yv;
-      if (curlymangoBack.y >= 0) {
-        curlymangoBack.y = 0;
-        player.ccFallingState = 1;
-        shakeRadius = 50;
-        cameraDistDest = 200;
+  const expectedFrame = Math.floor((Date.now() - startTime) * expectedFPS / 1000);
+  do {
+    frame++;
+    if (mode === 'game') {
+      movePlayer();
+      if (player.dead && keys.skip || frame > player.endDeathAnim && player.ccSteps >= 3) {
+        return 'menu';
       }
-    } else if (player.ccFallingState === 1) {
-      if (player.z > 100) player.ccFallingState = 2;
-    } else {
-      if (player.lastWhoopsie !== null && frame < player.lastWhoopsie + 300) {
-        curlymangoBack.proximity += (0.5 - curlymangoBack.proximity) / 3;
+      currentScoreDisplay.textContent = Math.floor(player.score);
+      coinsDisplay.textContent = player.coins;
+      if (player.coins < PRICES.speedy) {
+        if (!speedyBtn.classList.contains('disabled')) speedyBtn.classList.add('disabled');
       } else {
-        curlymangoBack.proximity += (1 - curlymangoBack.proximity) / 3;
+        if (speedyBtn.classList.contains('disabled')) speedyBtn.classList.remove('disabled');
       }
-      curlymangoBack.opacity = curlymangoBack.proximity;
-      curlymangoBack.z = playerObject.z - cameraDistDest * curlymangoBack.proximity - 10;
-    }
-    camera.rot += (cameraRotDest - camera.rot) / 5;
-    GROUND_Y += (groundYDest - GROUND_Y) / 5;
-    cameraDist += (cameraDistDest - cameraDist) / 5;
-    ({paths, objects} = calculate3D(
-      [beginningPath, ...currentMap.paths, ...(nextMap || {paths: []}).paths],
-      [playerObject, !player.seeCC && curlymangoBack, ...currentMap.objects, ...(nextMap || {objects: []}).objects],
-      playerObject.x, playerObject.z
-    ));
-  } else if (mode.slice(0, 4) === 'menu') {
-    camera.rot += (cameraRotDest - camera.rot) / 300;
-    if (frame > menu.nextRefocus) {
-      menu.nextRefocus = frame + 300;
-      menu.focusX = Math.random() * 400 - 200;
-      menu.focusZ = Math.random() * 400 - 200;
-      cameraDist = Math.random() * 400 - 200;
-      GROUND_Y = Math.random() * 80 + 10;
-      camera.rot = Math.atan2(-menu.focusX, -menu.focusZ);
-      cameraRotDest = camera.rot + Math.PI / 2;
-    }
-    ({paths, objects} = calculate3D([], menu.objects, menu.focusX, menu.focusZ));
-  } else if (mode === 'play-again') {
-    cameraDist = 500;
-    GROUND_Y = Math.sin(frame / 60) * 30 + 70;
-    camera.rot = Math.PI + Math.sin(frame / 44) / 20;
-    ({paths, objects} = calculate3D(playAgain.paths, playAgain.objects, 0, 0));
-  } else if (mode === 'intro') {
-    if (keys.skip) {
-      return 'game';
-    }
-    const progress = frame - intro.startTime;
-    if (progress < intro.times.zoomToV1) {
-      cameraDist -= 0.5;
-    } else if (progress < intro.times.studentComeOut) {
-      if (intro.lastTime !== 'studentComeOut') {
-        shakeRadius = 20;
-        intro.lastTime = 'studentComeOut';
+      if (player.coins < PRICES.life) {
+        if (!lifeBtn.classList.contains('disabled')) lifeBtn.classList.add('disabled');
+      } else {
+        if (lifeBtn.classList.contains('disabled')) lifeBtn.classList.remove('disabled');
       }
-      shakeRadius *= 0.9;
-      intro.objects.student.z -= 3;
-    } else if (progress < intro.times.studentRunAway) {
-      shakeRadius = 0;
-      intro.objects.student.x += 5;
-    } else if (progress < intro.times.securityCamera) {
-      if (intro.lastTime !== 'securityCamera') {
-        GROUND_Y = 120;
-        intro.focusX = -130;
-        cameraDist = 150;
-        intro.lastTime = 'securityCamera';
+      if (player.speed < SPEED_DECREASE || player.coins < PRICES.reset) {
+        if (!resetBtn.classList.contains('disabled')) resetBtn.classList.add('disabled');
+      } else {
+        if (resetBtn.classList.contains('disabled')) resetBtn.classList.remove('disabled');
       }
-      cameraDist -= 0.5;
-      shakeRadius += 0.1;
-    } else {
-      return 'game';
+      const playerObject = {
+        type: player.dead ? 'player' : (player.ducking ? playerDuckCycle : playerWalkCycle)[Math.floor(frame / 15) % 4],
+        x: player.x,
+        y: player.y,
+        z: player.z,
+        opacity: player.invincible ? (player.invincibleTimeout - frame < 60 ? (frame % 12 < 6 ? 0.2 : PLAYER_OPACITY) : player.invincibleTimeout - frame < 180 ? (frame % 30 < 15 ? 0.2 : PLAYER_OPACITY) : 0.2) : PLAYER_OPACITY
+      };
+      if (player.ccFallingState === 0) {
+        curlymangoBack.z = 100;
+        curlymangoBack.yv += 0.5;
+        curlymangoBack.y += curlymangoBack.yv;
+        if (curlymangoBack.y >= 0) {
+          curlymangoBack.y = 0;
+          player.ccFallingState = 1;
+          shakeRadius = 50;
+          cameraDistDest = 200;
+        }
+      } else if (player.ccFallingState === 1) {
+        if (player.z > 100) player.ccFallingState = 2;
+      } else {
+        if (player.lastWhoopsie !== null && frame < player.lastWhoopsie + 300) {
+          curlymangoBack.proximity += (0.5 - curlymangoBack.proximity) / 3;
+        } else {
+          curlymangoBack.proximity += (1 - curlymangoBack.proximity) / 3;
+        }
+        curlymangoBack.opacity = curlymangoBack.proximity;
+        curlymangoBack.z = playerObject.z - cameraDistDest * curlymangoBack.proximity - 10;
+      }
+      camera.rot += (cameraRotDest - camera.rot) / 5;
+      GROUND_Y += (groundYDest - GROUND_Y) / 5;
+      cameraDist += (cameraDistDest - cameraDist) / 5;
+      if (frame >= expectedFrame) ({paths, objects} = calculate3D(
+        [beginningPath, ...currentMap.paths, ...(nextMap || {paths: []}).paths],
+        [playerObject, !player.seeCC && curlymangoBack, ...currentMap.objects, ...(nextMap || {objects: []}).objects],
+        playerObject.x, playerObject.z
+      ));
+    } else if (mode.slice(0, 4) === 'menu') {
+      camera.rot += (cameraRotDest - camera.rot) / 300;
+      if (frame > menu.nextRefocus) {
+        menu.nextRefocus = frame + 300;
+        menu.focusX = Math.random() * 400 - 200;
+        menu.focusZ = Math.random() * 400 - 200;
+        cameraDist = Math.random() * 400 - 200;
+        GROUND_Y = Math.random() * 80 + 10;
+        camera.rot = Math.atan2(-menu.focusX, -menu.focusZ);
+        cameraRotDest = camera.rot + Math.PI / 2;
+      }
+      if (frame >= expectedFrame) ({paths, objects} = calculate3D([], menu.objects, menu.focusX, menu.focusZ));
+    } else if (mode === 'play-again') {
+      cameraDist = 500;
+      GROUND_Y = Math.sin(frame / 60) * 30 + 70;
+      camera.rot = Math.PI + Math.sin(frame / 44) / 20;
+      if (frame >= expectedFrame) ({paths, objects} = calculate3D(playAgain.paths, playAgain.objects, 0, 0));
+    } else if (mode === 'intro') {
+      if (keys.skip) {
+        return 'game';
+      }
+      const progress = frame - intro.startTime;
+      if (progress < intro.times.zoomToV1) {
+        cameraDist -= 0.5;
+      } else if (progress < intro.times.studentComeOut) {
+        if (intro.lastTime !== 'studentComeOut') {
+          shakeRadius = 20;
+          intro.lastTime = 'studentComeOut';
+        }
+        shakeRadius *= 0.9;
+        intro.objects.student.z -= 3;
+      } else if (progress < intro.times.studentRunAway) {
+        shakeRadius = 0;
+        intro.objects.student.x += 5;
+      } else if (progress < intro.times.securityCamera) {
+        if (intro.lastTime !== 'securityCamera') {
+          GROUND_Y = 120;
+          intro.focusX = -130;
+          cameraDist = 150;
+          intro.lastTime = 'securityCamera';
+        }
+        cameraDist -= 0.5;
+        shakeRadius += 0.1;
+      } else {
+        return 'game';
+      }
+      if (frame >= expectedFrame) ({paths, objects} = calculate3D(intro.paths, Object.values(intro.objects), intro.focusX, intro.focusZ));
     }
-    ({paths, objects} = calculate3D(intro.paths, Object.values(intro.objects), intro.focusX, intro.focusZ));
-  } else {
-    paths = objects = [];
-  }
+  } while (frame < expectedFrame);
 
   const start = performance.now();
   c.fillStyle = '#b0a47e';

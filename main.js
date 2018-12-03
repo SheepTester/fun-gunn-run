@@ -16,7 +16,7 @@ if (window.location.search) {
   });
 }
 
-const VERSION = 1.1;
+const VERSION = 1.2;
 const HIGHSCORE_COOKIE = '[fun-gunn-run] highscore';
 // modified regex from  https://stackoverflow.com/questions/161738/what-is-the-best-regular-expression-to-check-if-a-string-is-a-valid-url#comment19948615_163684
 const urlRegex = /^(https?):\/\/[\-A-Za-z0-9+&@#\/%?=~_|!:,.;]*[\-A-Za-z0-9+&@#\/%=~_|]$/;
@@ -163,6 +163,7 @@ function init() {
   let paused = false;
   let animID = null;
   function callPaint() {
+    animID = window.requestAnimationFrame(callPaint);
     const returnVal = paint();
     switch (returnVal) {
       case 'menu':
@@ -174,14 +175,19 @@ function init() {
         paint();
         break;
     }
-    animID = window.requestAnimationFrame(callPaint);
   }
+  let lastPauseTime = null;
   document.addEventListener('keydown', e => {
     if (e.target.tagName === 'INPUT') return;
     if (e.keyCode === 80) {
       paused = !paused;
-      if (paused) window.cancelAnimationFrame(animID);
-      else callPaint();
+      if (paused) {
+        window.cancelAnimationFrame(animID);
+        lastPauseTime = Date.now();
+      } else {
+        startTime += Date.now() - lastPauseTime;
+        callPaint();
+      }
     }
   });
   loadImages().then(callPaint);
