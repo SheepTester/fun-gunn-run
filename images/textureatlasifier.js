@@ -12,14 +12,14 @@ const widthHeightRegex = /width="([0-9.]+)" height="([0-9.]+)"/;
     let [, width, height] = widthHeightRegex.exec(svg);
     width = +width, height = +height;
     if (width > maxWidth) maxWidth = width;
-    svgs += svg.replace(/(style="isolation:isolate")/, `x="0" y="${y}"`).replace('<?xml version="1.0" standalone="no"?>', '');
+    svgs += svg.replace(/<svg/, `<svg x="0" y="${y}"`);
     positions[images[i].slice(0, -4)] = {
       x: 0,
       y: y,
       width: width,
       height: height
     };
-    y += Math.ceil(height);
+    y += Math.ceil(height) + 1;
   });
   svgs = `<svg viewBox="0 0 ${maxWidth} ${y}" width="${maxWidth}" height="${y}" xmlns="http://www.w3.org/2000/svg">` + svgs + '</svg>';
   await write('./images/textureatlas.svg', svgs);
