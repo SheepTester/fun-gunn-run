@@ -16,40 +16,45 @@ const destroyCloseG = /<\/g>/g;
 const noGroups = /<g( clip-path="url\(#_clipPath_[a-zA-Z0-9]+\)")?>/g;
 const findRGB = /rgb\((\d+),(\d+),(\d+)\)/g;
 
+function destroySVG(svg) {
+  return svg.replace(noVectorEffectRegex, '')
+    .replace(removeHeader, '')
+    .replace(removeMeterlimit, '')
+    .replace(removeEvenodd, '')
+    .replace(removeDefs, '')
+    .replace(removeIsolate, '')
+    .replace(removeSpacesPath, '$1')
+    .replace(removeStrokeOpacity, '')
+    .replace(weirdDecimals, m => Math.round(+m))
+    .replace(actuallyNoAttributionEitherOof, '')
+    .replace(noHiddenRect, '')
+    .replace(findRGB, (_, r, g, b) => {
+      r = (+r).toString(16).padStart(2, '0');
+      g = (+g).toString(16).padStart(2, '0');
+      b = (+b).toString(16).padStart(2, '0');
+      if (r === g && g === b && (r[0] === r[1] || r === '0')) {
+        return '#' + r[0].repeat(3);
+      } else {
+        return '#' + r + g + b;
+      }
+    });
+}
+
 (async () => {
   ignore = (await read('./images/ignore')).split(/\r?\n/);
   const onlyForIndex = ignore.indexOf('<< ONLY FOR TEXTUREATLASIFIER >>');
   if (~onlyForIndex) {
     ignore = ignore.slice(0, onlyForIndex);
   }
+  ignore.push('dumb-logo.svg');
   const images = (await readdir('./images/')).filter(filename => !ignore.includes(filename));
-  // const images = ['test.svg'];
   await (await Promise.all(images.map(filename => read('./images/' + filename)))).map((svg, i) => {
     return write(`./images/${images[i]}`,
-      svg.replace(noVectorEffectRegex, '')
-      .replace(removeHeader, '')
-      .replace(removeMeterlimit, '')
-      .replace(removeEvenodd, '')
-      .replace(removeDefs, '')
-      .replace(removeIsolate, '')
-      .replace(removeSpacesPath, '$1')
-      .replace(removeStrokeOpacity, '')
-      .replace(weirdDecimals, m => Math.round(+m))
-      .replace(actuallyNoAttributionEitherOof, '')
-      .replace(noHiddenRect, '')
+      destroySVG(svg)
       .replace(destroyCloseG, '')
       .replace(noGroups, '')
-      .replace(findRGB, (_, r, g, b) => {
-        r = (+r).toString(16).padStart(2, '0');
-        g = (+g).toString(16).padStart(2, '0');
-        b = (+b).toString(16).padStart(2, '0');
-        if (r === g && g === b && (r[0] === r[1] || r === '0')) {
-          return '#' + r[0].repeat(3);
-        } else {
-          return '#' + r + g + b;
-        }
-      })
     );
   });
+  await write('./images/dumb-logo.svg', destroySVG(await read('./images/dumb-logo.svg')));
   console.log('ok');
 })();

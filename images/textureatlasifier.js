@@ -19,7 +19,7 @@ const widthHeightRegex = /width="([0-9.]+)" height="([0-9.]+)"/;
       width: width,
       height: height
     };
-    y += Math.ceil(height);
+    y += Math.ceil(height) + 1;
   });
   svgs = `<svg viewBox="0 0 ${maxWidth} ${y}" width="${maxWidth}" height="${y}" xmlns="http://www.w3.org/2000/svg">` + svgs + '</svg>';
   await write('./images/textureatlas.svg', svgs);
