@@ -211,14 +211,25 @@ function paint() {
 
   const start = performance.now();
   c.fillStyle = '#b0a47e';
+  c.beginPath();
   paths.forEach(path => {
-    c.beginPath();
     c.moveTo(path[0].x + shakeX, path[0].y + shakeY);
-    path.slice(1).forEach(({x, y}) => c.lineTo(x + shakeX, y + shakeY))
-    c.fill();
+    path.slice(1).forEach(({x, y}) => c.lineTo(x + shakeX, y + shakeY));
   });
+  c.fill();
   let noRenderUnder = renderLimit === null ? 0 : objects.length - renderLimit;
   let objectsRendered = 0;
+  if (!params.noShadows) {
+    c.fillStyle = 'rgba(0, 0, 0, 0.1)';
+    const fullCircle = 2 * Math.PI;
+    c.beginPath();
+    objects.forEach(obj => {
+      const width = obj.scale * (customSizes[obj.type] ? customSizes[obj.type][0] : imageData[obj.type].width);
+      c.moveTo(obj.x + width / 2, obj.ground);
+      c.ellipse(obj.x, obj.ground, width / 2, width / 8, 0, 0, fullCircle);
+    });
+    c.fill();
+  }
   objects.forEach((obj, i) => {
     if (i < noRenderUnder) return;
     if (params.autoCensor && obj.type === 'aplus' && obj.scale < 0.7) return;

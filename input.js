@@ -118,8 +118,11 @@ function initTouch() {
     if (touch === null) {
       touch = e.changedTouches[0].identifier;
       touchCircleDown(e.touches[0].clientX, e.touches[0].clientY);
+      if (mode === 'game' && e.target.tagName === 'DIV') e.preventDefault();
+    } else {
+      e.target.click();
+      e.preventDefault();
     }
-    if (mode === 'game' && e.target.tagName === 'DIV') e.preventDefault();
   }, {passive: false});
   document.addEventListener('touchmove', e => {
     if (e.touches[0].identifier === touch) {

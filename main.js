@@ -4,6 +4,7 @@
 // autoCensor    - automatically limits the objects drawn such that it should take the given amount of milliseconds to render them
 // mouseCircle   - enables touch circle for mouse
 // playerOpacity - opacity of player
+// noShadows     - hides shadows
 const params = {};
 if (window.location.search) {
   window.location.search.slice(1).split('&').forEach(entry => {
@@ -16,7 +17,7 @@ if (window.location.search) {
   });
 }
 
-const VERSION = 1.2;
+const VERSION = 1.3;
 const HIGHSCORE_COOKIE = '[fun-gunn-run] highscore';
 // modified regex from  https://stackoverflow.com/questions/161738/what-is-the-best-regular-expression-to-check-if-a-string-is-a-valid-url#comment19948615_163684
 const urlRegex = /^(https?):\/\/[\-A-Za-z0-9+&@#\/%?=~_|!:,.;]*[\-A-Za-z0-9+&@#\/%=~_|]$/;
@@ -334,23 +335,27 @@ function init() {
   const autoCensorInput = document.getElementById('auto-censor');
   const mouseCircleInput = document.getElementById('mouse-circle');
   const playerOpacityInput = document.getElementById('player-opacity');
+  const noShadowsInput = document.getElementById('no-shadows');
   const outputLink = document.getElementById('generate-url');
   if (params.quality) qualityInput.value = params.quality;
   if (params.autoCensor) autoCensorInput.value = params.autoCensor;
   if (params.mouseCircle) mouseCircleInput.checked = true;
   if (params.playerOpacity) playerOpacityInput.value = params.playerOpacity;
+  if (params.noShadows) noShadowsInput.checked = true;
   function updateURL() {
     let params = [];
     if (quality.value) params.push('quality=' + quality.value);
     if (autoCensorInput.value) params.push('autoCensor=' + autoCensorInput.value);
     if (mouseCircleInput.checked) params.push('mouseCircle');
     if (playerOpacityInput.value) params.push('playerOpacity=' + playerOpacityInput.value);
+    if (noShadowsInput.checked) params.push('noShadows');
     outputLink.href = '?' + params.join('&');
   }
   qualityInput.addEventListener('input', updateURL);
   autoCensorInput.addEventListener('input', updateURL);
   mouseCircleInput.addEventListener('change', updateURL);
   playerOpacityInput.addEventListener('input', updateURL);
+  noShadowsInput.addEventListener('change', updateURL);
   updateURL();
 
   [...document.getElementsByTagName('button'), ...document.getElementsByTagName('input')].forEach(btn => btn.disabled = true);

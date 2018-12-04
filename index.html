@@ -9,12 +9,12 @@
     <script src="../sheep2.js" charset="utf-8"></script> -->
     <link rel="stylesheet" href="./styles.css">
     <link href="https://fonts.googleapis.com/css?family=Montserrat" rel="stylesheet">
-    <!-- <script src="./input.js" charset="utf-8"></script>
+    <script src="./input.js" charset="utf-8"></script>
     <script src="./render.js" charset="utf-8"></script>
     <script src="./positioning.js" charset="utf-8"></script>
     <script src="./game.js" charset="utf-8"></script>
-    <script src="./main.js" charset="utf-8"></script> -->
-    <script src="./everything.js" charset="utf-8"></script>
+    <script src="./main.js" charset="utf-8"></script>
+    <!-- <script src="./everything.js" charset="utf-8"></script> -->
   </head>
   <body class="menu">
     <div class="ground"></div>
@@ -33,6 +33,11 @@
         <p>This is a Gunn-themed version of Temple Run but with very, very bad graphics. You, a student, attempt to escape SELF, but Curlymango starts chasing you. You try to outrun her, but she's surprisingly resilient.</p>
         <p>This game is open-sourced on <a href="https://github.com/SheepTester/fun-gunn-run" class="link">Github</a>; bug reports and feature requests can go there. Anyone may (and should) make own version of this game, though please consider crediting the creator or link to this game somewhere.</p>
         <h2>Updates</h2>
+        <p>Update 1.3</p>
+        <ul>
+          <li>you can now tap on other things with a second finger while using the joystick</li>
+          <li>shadows! golf carts easier?</li>
+        </ul>
         <p>Update 1.2</p>
         <ul>
           <li>game is less framerate dependent</li>
@@ -95,6 +100,7 @@
         <p>Ideal milliseconds for rendering <input type="text" class="number" id="auto-censor" placeholder="10"> (a number between 1 and 16) This automatically adjusts the number of objects rendered such that it should take the ideal amount of time to render.</p>
         <p>Mouse joystick? <input type="checkbox" id="mouse-circle"> This lets you use the touch joystick with the mouse.</p>
         <p>Player opacity <input type="text" class="number" id="player-opacity" placeholder="0.6"> (a number between 0 and 1) Default is 0.6.</p>
+        <p>Hide shadows? <input type="checkbox" id="no-shadows"></p>
         <p><a class="btn" id="generate-url">generate</a></p>
       </div>
       <button class="btn menu-btn" id="from-options-back">back to menu</button>

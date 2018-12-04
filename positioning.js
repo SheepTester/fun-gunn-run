@@ -24,12 +24,8 @@ function transform(camera, x, z, sin, cos) {
     z: relZ * cos + relX * sin
   };
 }
-function flatify(x, y, z) {
-  return {
-    x: x / z * VIEW_FACTOR,
-    y: y / z * VIEW_FACTOR,
-    scale: 1 / z * VIEW_FACTOR
-  };
+function flatify(n, z) {
+  return n / z * VIEW_FACTOR;
 }
 function intersect(pt1, pt2) {
   return {x: pt1.x + (NEAR_PLANE - pt1.z) / (pt2.z - pt1.z) * (pt2.x - pt1.x), z: NEAR_PLANE};
@@ -78,14 +74,19 @@ function calculate3D(paths, objects, focusX, focusZ) {
       }
     }
     if (points.length < 3) return;
-    return points.map(({x, z}) => flatify(x, GROUND_Y, z));
+    return points.map(({x, z}) => ({x: flatify(x, z), y: flatify(GROUND_Y, z)}));
   }).filter(obj => obj);
   objects = objects.map(obj => {
     if (!obj) return;
     const y = obj.y === undefined ? GROUND_Y : obj.relativeY ? obj.y + GROUND_Y : obj.y;
     const transformation = transform(camera, obj.x, obj.z, sin, cos);
     if (transformation.z >= NEAR_PLANE) {
-      const coords = flatify(transformation.x, y, transformation.z);
+      const coords = {
+        x: flatify(transformation.x, transformation.z),
+        y: flatify(y, transformation.z),
+        scale: flatify(1, transformation.z),
+        ground: flatify(GROUND_Y, transformation.z)
+      };
       coords.type = obj.type;
       coords.distance = transformation.z;
       coords.translucency = obj.opacity === undefined ? null : obj.opacity;
