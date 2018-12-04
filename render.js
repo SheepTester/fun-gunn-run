@@ -89,6 +89,7 @@ let renderLimit = null;
 let frame = 0;
 let startTime = Date.now();
 const expectedFPS = 60;
+const fullCircle = 2 * Math.PI;
 const playerWalkCycle = ['player', 'player_walk1', 'player', 'player_walk2'];
 const playerDuckCycle = ['ducking', 'duck1', 'ducking', 'duck2'];
 function paint() {
@@ -221,12 +222,11 @@ function paint() {
   let objectsRendered = 0;
   if (!params.noShadows) {
     c.fillStyle = 'rgba(0, 0, 0, 0.1)';
-    const fullCircle = 2 * Math.PI;
     c.beginPath();
     objects.forEach(obj => {
       const width = obj.scale * (customSizes[obj.type] ? customSizes[obj.type][0] : imageData[obj.type].width);
-      c.moveTo(obj.x + width / 2, obj.ground);
-      c.ellipse(obj.x, obj.ground, width / 2, width / 8, 0, 0, fullCircle);
+      c.moveTo(obj.x + width / 2 + shakeX, obj.ground + shakeY);
+      c.ellipse(obj.x + shakeX, obj.ground + shakeY, width / 2, width / 8, 0, 0, fullCircle);
     });
     c.fill();
   }

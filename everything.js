@@ -120,8 +120,11 @@ function initTouch() {
     if (touch === null) {
       touch = e.changedTouches[0].identifier;
       touchCircleDown(e.touches[0].clientX, e.touches[0].clientY);
+      if (mode === 'game' && e.target.tagName === 'DIV') e.preventDefault();
+    } else {
+      e.target.click();
+      e.preventDefault();
     }
-    if (mode === 'game' && e.target.tagName === 'DIV') e.preventDefault();
   }, {passive: false});
   document.addEventListener('touchmove', e => {
     if (e.touches[0].identifier === touch) {
@@ -254,6 +257,7 @@ let renderLimit = null;
 let frame = 0;
 let startTime = Date.now();
 const expectedFPS = 60;
+const fullCircle = 2 * Math.PI;
 const playerWalkCycle = ['player', 'player_walk1', 'player', 'player_walk2'];
 const playerDuckCycle = ['ducking', 'duck1', 'ducking', 'duck2'];
 function paint() {
@@ -376,14 +380,24 @@ function paint() {
 
   const start = performance.now();
   c.fillStyle = '#b0a47e';
+  c.beginPath();
   paths.forEach(path => {
-    c.beginPath();
     c.moveTo(path[0].x + shakeX, path[0].y + shakeY);
-    path.slice(1).forEach(({x, y}) => c.lineTo(x + shakeX, y + shakeY))
-    c.fill();
+    path.slice(1).forEach(({x, y}) => c.lineTo(x + shakeX, y + shakeY));
   });
+  c.fill();
   let noRenderUnder = renderLimit === null ? 0 : objects.length - renderLimit;
   let objectsRendered = 0;
+  if (!params.noShadows) {
+    c.fillStyle = 'rgba(0, 0, 0, 0.1)';
+    c.beginPath();
+    objects.forEach(obj => {
+      const width = obj.scale * (customSizes[obj.type] ? customSizes[obj.type][0] : imageData[obj.type].width);
+      c.moveTo(obj.x + width / 2 + shakeX, obj.ground + shakeY);
+      c.ellipse(obj.x + shakeX, obj.ground + shakeY, width / 2, width / 8, 0, 0, fullCircle);
+    });
+    c.fill();
+  }
   objects.forEach((obj, i) => {
     if (i < noRenderUnder) return;
     if (params.autoCensor && obj.type === 'aplus' && obj.scale < 0.7) return;
@@ -429,12 +443,8 @@ function transform(camera, x, z, sin, cos) {
     z: relZ * cos + relX * sin
   };
 }
-function flatify(x, y, z) {
-  return {
-    x: x / z * VIEW_FACTOR,
-    y: y / z * VIEW_FACTOR,
-    scale: 1 / z * VIEW_FACTOR
-  };
+function flatify(n, z) {
+  return n / z * VIEW_FACTOR;
 }
 function intersect(pt1, pt2) {
   return {x: pt1.x + (NEAR_PLANE - pt1.z) / (pt2.z - pt1.z) * (pt2.x - pt1.x), z: NEAR_PLANE};
@@ -483,14 +493,19 @@ function calculate3D(paths, objects, focusX, focusZ) {
       }
     }
     if (points.length < 3) return;
-    return points.map(({x, z}) => flatify(x, GROUND_Y, z));
+    return points.map(({x, z}) => ({x: flatify(x, z), y: flatify(GROUND_Y, z)}));
   }).filter(obj => obj);
   objects = objects.map(obj => {
     if (!obj) return;
     const y = obj.y === undefined ? GROUND_Y : obj.relativeY ? obj.y + GROUND_Y : obj.y;
     const transformation = transform(camera, obj.x, obj.z, sin, cos);
     if (transformation.z >= NEAR_PLANE) {
-      const coords = flatify(transformation.x, y, transformation.z);
+      const coords = {
+        x: flatify(transformation.x, transformation.z),
+        y: flatify(y, transformation.z),
+        scale: flatify(1, transformation.z),
+        ground: flatify(GROUND_Y, transformation.z)
+      };
       coords.type = obj.type;
       coords.distance = transformation.z;
       coords.translucency = obj.opacity === undefined ? null : obj.opacity;
@@ -809,6 +824,7 @@ function generateMap(zOffset, justTurned = false) {
 // autoCensor    - automatically limits the objects drawn such that it should take the given amount of milliseconds to render them
 // mouseCircle   - enables touch circle for mouse
 // playerOpacity - opacity of player
+// noShadows     - hides shadows
 const params = {};
 if (window.location.search) {
   window.location.search.slice(1).split('&').forEach(entry => {
@@ -821,7 +837,7 @@ if (window.location.search) {
   });
 }
 
-const VERSION = 1.2;
+const VERSION = 1.3;
 const HIGHSCORE_COOKIE = '[fun-gunn-run] highscore';
 // modified regex from  https://stackoverflow.com/questions/161738/what-is-the-best-regular-expression-to-check-if-a-string-is-a-valid-url#comment19948615_163684
 const urlRegex = /^(https?):\/\/[\-A-Za-z0-9+&@#\/%?=~_|!:,.;]*[\-A-Za-z0-9+&@#\/%=~_|]$/;
@@ -1139,23 +1155,27 @@ function init() {
   const autoCensorInput = document.getElementById('auto-censor');
   const mouseCircleInput = document.getElementById('mouse-circle');
   const playerOpacityInput = document.getElementById('player-opacity');
+  const noShadowsInput = document.getElementById('no-shadows');
   const outputLink = document.getElementById('generate-url');
   if (params.quality) qualityInput.value = params.quality;
   if (params.autoCensor) autoCensorInput.value = params.autoCensor;
   if (params.mouseCircle) mouseCircleInput.checked = true;
   if (params.playerOpacity) playerOpacityInput.value = params.playerOpacity;
+  if (params.noShadows) noShadowsInput.checked = true;
   function updateURL() {
     let params = [];
     if (quality.value) params.push('quality=' + quality.value);
     if (autoCensorInput.value) params.push('autoCensor=' + autoCensorInput.value);
     if (mouseCircleInput.checked) params.push('mouseCircle');
     if (playerOpacityInput.value) params.push('playerOpacity=' + playerOpacityInput.value);
+    if (noShadowsInput.checked) params.push('noShadows');
     outputLink.href = '?' + params.join('&');
   }
   qualityInput.addEventListener('input', updateURL);
   autoCensorInput.addEventListener('input', updateURL);
   mouseCircleInput.addEventListener('change', updateURL);
   playerOpacityInput.addEventListener('input', updateURL);
+  noShadowsInput.addEventListener('change', updateURL);
   updateURL();
 
   [...document.getElementsByTagName('button'), ...document.getElementsByTagName('input')].forEach(btn => btn.disabled = true);
