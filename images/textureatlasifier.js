@@ -12,7 +12,7 @@ const widthHeightRegex = /width="([0-9.]+)" height="([0-9.]+)"/;
     let [, width, height] = widthHeightRegex.exec(svg);
     width = +width, height = +height;
     if (width > maxWidth) maxWidth = width;
-    svgs += svg.replace(/(style="isolation:isolate")/, `x="0" y="${y}"`).replace('<?xml version="1.0" standalone="no"?>', '');
+    svgs += svg.replace(/<svg/, `<svg x="0" y="${y}"`);
     positions[images[i].slice(0, -4)] = {
       x: 0,
       y: y,

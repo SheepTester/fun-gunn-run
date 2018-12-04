@@ -10,6 +10,11 @@ const removeIsolate = / style="isolation:isolate"/g;
 const removeSpacesPath = / ([MZLCQ]) /g; // $1
 const removeStrokeOpacity = / stroke-opacity="1000000"/g;
 const weirdDecimals = /\d+\.\d{4,}/g;
+const actuallyNoAttributionEitherOof = /<!-- Generator: Gravit\.io -->/g;
+const noHiddenRect = /<clipPath id="_clipPath_[a-zA-Z0-9]+"><rect x="0" y="0" width="\d+" height="\d+" transform="matrix\(1,0,0,1,0,0\)" fill="rgb\(255,255,255\)"\/><\/clipPath>/g;
+const destroyCloseG = /<\/g>/g;
+const noGroups = /<g( clip-path="url\(#_clipPath_[a-zA-Z0-9]+\)")?>/g;
+const findRGB = /rgb\((\d+),(\d+),(\d+)\)/g;
 
 (async () => {
   ignore = (await read('./images/ignore')).split(/\r?\n/);
@@ -17,8 +22,8 @@ const weirdDecimals = /\d+\.\d{4,}/g;
   if (~onlyForIndex) {
     ignore = ignore.slice(0, onlyForIndex);
   }
-  // const images = (await readdir('./images/')).filter(filename => !ignore.includes(filename));
-  const images = ['test.svg'];
+  const images = (await readdir('./images/')).filter(filename => !ignore.includes(filename));
+  // const images = ['test.svg'];
   await (await Promise.all(images.map(filename => read('./images/' + filename)))).map((svg, i) => {
     return write(`./images/${images[i]}`,
       svg.replace(noVectorEffectRegex, '')
@@ -30,6 +35,20 @@ const weirdDecimals = /\d+\.\d{4,}/g;
       .replace(removeSpacesPath, '$1')
       .replace(removeStrokeOpacity, '')
       .replace(weirdDecimals, m => Math.round(+m))
+      .replace(actuallyNoAttributionEitherOof, '')
+      .replace(noHiddenRect, '')
+      .replace(destroyCloseG, '')
+      .replace(noGroups, '')
+      .replace(findRGB, (_, r, g, b) => {
+        r = (+r).toString(16).padStart(2, '0');
+        g = (+g).toString(16).padStart(2, '0');
+        b = (+b).toString(16).padStart(2, '0');
+        if (r === g && g === b && (r[0] === r[1] || r === '0')) {
+          return '#' + r[0].repeat(3);
+        } else {
+          return '#' + r + g + b;
+        }
+      })
     );
   });
   console.log('ok');
