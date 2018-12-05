@@ -5,6 +5,9 @@
 // mouseCircle   - enables touch circle for mouse
 // playerOpacity - opacity of player
 // noShadows     - hides shadows
+// minimalCoins  - draws circles instead of rendering images for coins; opacity of the circles
+// showFPS       - shows the FPS and an FPS graph in the bottom left
+// capFPS        - does not calculate next frame in case your frame rate is oddly high
 const params = {};
 if (window.location.search) {
   window.location.search.slice(1).split('&').forEach(entry => {
@@ -17,7 +20,7 @@ if (window.location.search) {
   });
 }
 
-const VERSION = 1.3;
+const VERSION = 1.4;
 const HIGHSCORE_COOKIE = '[fun-gunn-run] highscore';
 // modified regex from  https://stackoverflow.com/questions/161738/what-is-the-best-regular-expression-to-check-if-a-string-is-a-valid-url#comment19948615_163684
 const urlRegex = /^(https?):\/\/[\-A-Za-z0-9+&@#\/%?=~_|!:,.;]*[\-A-Za-z0-9+&@#\/%=~_|]$/;
@@ -336,12 +339,18 @@ function init() {
   const mouseCircleInput = document.getElementById('mouse-circle');
   const playerOpacityInput = document.getElementById('player-opacity');
   const noShadowsInput = document.getElementById('no-shadows');
+  const minimalCoinsInput = document.getElementById('minimal-coins');
+  const showFPSInput = document.getElementById('show-fps');
+  const capFPSInput = document.getElementById('cap-fps');
   const outputLink = document.getElementById('generate-url');
   if (params.quality) qualityInput.value = params.quality;
   if (params.autoCensor) autoCensorInput.value = params.autoCensor;
   if (params.mouseCircle) mouseCircleInput.checked = true;
   if (params.playerOpacity) playerOpacityInput.value = params.playerOpacity;
   if (params.noShadows) noShadowsInput.checked = true;
+  if (params.minimalCoins) minimalCoinsInput.value = params.minimalCoins;
+  if (params.showFPS) showFPSInput.checked = true;
+  if (params.capFPS) capFPSInput.checked = true;
   function updateURL() {
     let params = [];
     if (quality.value) params.push('quality=' + quality.value);
@@ -349,13 +358,20 @@ function init() {
     if (mouseCircleInput.checked) params.push('mouseCircle');
     if (playerOpacityInput.value) params.push('playerOpacity=' + playerOpacityInput.value);
     if (noShadowsInput.checked) params.push('noShadows');
-    outputLink.href = '?' + params.join('&');
+    if (minimalCoinsInput.value) params.push('minimalCoins=' + minimalCoinsInput.value);
+    if (showFPSInput.checked) params.push('showFPS');
+    if (capFPSInput.checked) params.push('capFPS');
+    if (params.length) outputLink.href = '?' + params.join('&');
+    else outputLink.href = './';
   }
   qualityInput.addEventListener('input', updateURL);
   autoCensorInput.addEventListener('input', updateURL);
   mouseCircleInput.addEventListener('change', updateURL);
   playerOpacityInput.addEventListener('input', updateURL);
   noShadowsInput.addEventListener('change', updateURL);
+  minimalCoinsInput.addEventListener('input', updateURL);
+  showFPSInput.addEventListener('change', updateURL);
+  capFPSInput.addEventListener('change', updateURL);
   updateURL();
 
   [...document.getElementsByTagName('button'), ...document.getElementsByTagName('input')].forEach(btn => btn.disabled = true);

@@ -255,128 +255,153 @@ const beginningPath = {x: -50, z: -500, width: 100, height: 500};
 let shakeRadius = 0;
 let renderLimit = null;
 let frame = 0;
-let startTime = Date.now();
+let startTime = Date.now(), lastFrameTime = null;
 const expectedFPS = 60;
 const fullCircle = 2 * Math.PI;
 const playerWalkCycle = ['player', 'player_walk1', 'player', 'player_walk2'];
 const playerDuckCycle = ['ducking', 'duck1', 'ducking', 'duck2'];
+const MAX_FPS_HIST_LEN = 300;
+let fpsHist = [];
+function drawFPSMarkers(left, bottom) {
+  c.strokeStyle = 'rgba(0, 0, 0, 0.2)';
+  c.fillStyle = 'rgba(0, 0, 0, 0.5)';
+  c.font = '12px monospace';
+  c.beginPath();
+  c.moveTo(left, bottom - 30);
+  c.lineTo(left + MAX_FPS_HIST_LEN, bottom - 30);
+  c.moveTo(left, bottom - 60);
+  c.lineTo(left + MAX_FPS_HIST_LEN, bottom - 60);
+  c.moveTo(left, bottom - 90);
+  c.lineTo(left + MAX_FPS_HIST_LEN, bottom - 90);
+  c.moveTo(left, bottom - 120);
+  c.lineTo(left + MAX_FPS_HIST_LEN, bottom - 120);
+  c.stroke();
+  c.fillText('30', left, bottom - 30);
+  c.fillText('60', left, bottom - 60);
+  c.fillText('90', left, bottom - 90);
+  c.fillText('120', left, bottom - 120);
+}
+let paths = [], objects = [];
 function paint() {
   c.clearRect(-cwidth / 2, -cheight / 2, cwidth, cheight);
   const shakeX = Math.random() * shakeRadius * 2 - shakeRadius;
   const shakeY = Math.random() * shakeRadius * 2 - shakeRadius;
 
-  let paths = [], objects = [];
+  const now = Date.now();
+  const expectedFrame = Math.floor((now - startTime) * expectedFPS / 1000);
 
-  const expectedFrame = Math.floor((Date.now() - startTime) * expectedFPS / 1000);
-  do {
-    frame++;
-    if (mode === 'game') {
-      movePlayer();
-      if (player.dead && keys.skip || frame > player.endDeathAnim && player.ccSteps >= 3) {
-        return 'menu';
-      }
-      currentScoreDisplay.textContent = Math.floor(player.score);
-      coinsDisplay.textContent = player.coins;
-      if (player.coins < PRICES.speedy) {
-        if (!speedyBtn.classList.contains('disabled')) speedyBtn.classList.add('disabled');
-      } else {
-        if (speedyBtn.classList.contains('disabled')) speedyBtn.classList.remove('disabled');
-      }
-      if (player.coins < PRICES.life) {
-        if (!lifeBtn.classList.contains('disabled')) lifeBtn.classList.add('disabled');
-      } else {
-        if (lifeBtn.classList.contains('disabled')) lifeBtn.classList.remove('disabled');
-      }
-      if (player.speed < SPEED_DECREASE || player.coins < PRICES.reset) {
-        if (!resetBtn.classList.contains('disabled')) resetBtn.classList.add('disabled');
-      } else {
-        if (resetBtn.classList.contains('disabled')) resetBtn.classList.remove('disabled');
-      }
-      const playerObject = {
-        type: player.dead ? 'player' : (player.ducking ? playerDuckCycle : playerWalkCycle)[Math.floor(frame / 15) % 4],
-        x: player.x,
-        y: player.y,
-        z: player.z,
-        opacity: player.invincible ? (player.invincibleTimeout - frame < 60 ? (frame % 12 < 6 ? 0.2 : PLAYER_OPACITY) : player.invincibleTimeout - frame < 180 ? (frame % 30 < 15 ? 0.2 : PLAYER_OPACITY) : 0.2) : PLAYER_OPACITY
-      };
-      if (player.ccFallingState === 0) {
-        curlymangoBack.z = 100;
-        curlymangoBack.yv += 0.5;
-        curlymangoBack.y += curlymangoBack.yv;
-        if (curlymangoBack.y >= 0) {
-          curlymangoBack.y = 0;
-          player.ccFallingState = 1;
-          shakeRadius = 50;
-          cameraDistDest = 200;
+  if (!(params.capFPS && frame >= expectedFrame)) {
+    paths = [], objects = [];
+    do {
+      frame++;
+      if (mode === 'game') {
+        movePlayer();
+        if (player.dead && keys.skip || frame > player.endDeathAnim && player.ccSteps >= 3) {
+          return 'menu';
         }
-      } else if (player.ccFallingState === 1) {
-        if (player.z > 100) player.ccFallingState = 2;
-      } else {
-        if (player.lastWhoopsie !== null && frame < player.lastWhoopsie + 300) {
-          curlymangoBack.proximity += (0.5 - curlymangoBack.proximity) / 3;
+        currentScoreDisplay.textContent = Math.floor(player.score);
+        coinsDisplay.textContent = player.coins;
+        if (player.coins < PRICES.speedy) {
+          if (!speedyBtn.classList.contains('disabled')) speedyBtn.classList.add('disabled');
         } else {
-          curlymangoBack.proximity += (1 - curlymangoBack.proximity) / 3;
+          if (speedyBtn.classList.contains('disabled')) speedyBtn.classList.remove('disabled');
         }
-        curlymangoBack.opacity = curlymangoBack.proximity;
-        curlymangoBack.z = playerObject.z - cameraDistDest * curlymangoBack.proximity - 10;
-      }
-      camera.rot += (cameraRotDest - camera.rot) / 5;
-      GROUND_Y += (groundYDest - GROUND_Y) / 5;
-      cameraDist += (cameraDistDest - cameraDist) / 5;
-      if (frame >= expectedFrame) ({paths, objects} = calculate3D(
-        [beginningPath, ...currentMap.paths, ...(nextMap || {paths: []}).paths],
-        [playerObject, !player.seeCC && curlymangoBack, ...currentMap.objects, ...(nextMap || {objects: []}).objects],
-        playerObject.x, playerObject.z
-      ));
-    } else if (mode.slice(0, 4) === 'menu') {
-      camera.rot += (cameraRotDest - camera.rot) / 300;
-      if (frame > menu.nextRefocus) {
-        menu.nextRefocus = frame + 300;
-        menu.focusX = Math.random() * 400 - 200;
-        menu.focusZ = Math.random() * 400 - 200;
-        cameraDist = Math.random() * 400 - 200;
-        GROUND_Y = Math.random() * 80 + 10;
-        camera.rot = Math.atan2(-menu.focusX, -menu.focusZ);
-        cameraRotDest = camera.rot + Math.PI / 2;
-      }
-      if (frame >= expectedFrame) ({paths, objects} = calculate3D([], menu.objects, menu.focusX, menu.focusZ));
-    } else if (mode === 'play-again') {
-      cameraDist = 500;
-      GROUND_Y = Math.sin(frame / 60) * 30 + 70;
-      camera.rot = Math.PI + Math.sin(frame / 44) / 20;
-      if (frame >= expectedFrame) ({paths, objects} = calculate3D(playAgain.paths, playAgain.objects, 0, 0));
-    } else if (mode === 'intro') {
-      if (keys.skip) {
-        return 'game';
-      }
-      const progress = frame - intro.startTime;
-      if (progress < intro.times.zoomToV1) {
-        cameraDist -= 0.5;
-      } else if (progress < intro.times.studentComeOut) {
-        if (intro.lastTime !== 'studentComeOut') {
-          shakeRadius = 20;
-          intro.lastTime = 'studentComeOut';
+        if (player.coins < PRICES.life) {
+          if (!lifeBtn.classList.contains('disabled')) lifeBtn.classList.add('disabled');
+        } else {
+          if (lifeBtn.classList.contains('disabled')) lifeBtn.classList.remove('disabled');
         }
-        shakeRadius *= 0.9;
-        intro.objects.student.z -= 3;
-      } else if (progress < intro.times.studentRunAway) {
-        shakeRadius = 0;
-        intro.objects.student.x += 5;
-      } else if (progress < intro.times.securityCamera) {
-        if (intro.lastTime !== 'securityCamera') {
-          GROUND_Y = 120;
-          intro.focusX = -130;
-          cameraDist = 150;
-          intro.lastTime = 'securityCamera';
+        if (player.speed < SPEED_DECREASE || player.coins < PRICES.reset) {
+          if (!resetBtn.classList.contains('disabled')) resetBtn.classList.add('disabled');
+        } else {
+          if (resetBtn.classList.contains('disabled')) resetBtn.classList.remove('disabled');
         }
-        cameraDist -= 0.5;
-        shakeRadius += 0.1;
-      } else {
-        return 'game';
+        const playerObject = {
+          type: player.dead ? 'player' : (player.ducking ? playerDuckCycle : playerWalkCycle)[Math.floor(frame / 15) % 4],
+          x: player.x,
+          y: player.y,
+          z: player.z,
+          opacity: player.invincible ? (player.invincibleTimeout - frame < 60 ? (frame % 12 < 6 ? 0.2 : PLAYER_OPACITY) : player.invincibleTimeout - frame < 180 ? (frame % 30 < 15 ? 0.2 : PLAYER_OPACITY) : 0.2) : PLAYER_OPACITY
+        };
+        if (player.ccFallingState === 0) {
+          curlymangoBack.z = 100;
+          curlymangoBack.yv += 0.5;
+          curlymangoBack.y += curlymangoBack.yv;
+          if (curlymangoBack.y >= 0) {
+            curlymangoBack.y = 0;
+            player.ccFallingState = 1;
+            shakeRadius = 50;
+            cameraDistDest = 200;
+          }
+        } else if (player.ccFallingState === 1) {
+          if (player.z > 100) player.ccFallingState = 2;
+        } else {
+          if (player.lastWhoopsie !== null && frame < player.lastWhoopsie + 300) {
+            curlymangoBack.proximity += (0.5 - curlymangoBack.proximity) / 3;
+          } else {
+            curlymangoBack.proximity += (1 - curlymangoBack.proximity) / 3;
+          }
+          curlymangoBack.opacity = curlymangoBack.proximity;
+          curlymangoBack.z = playerObject.z - cameraDistDest * curlymangoBack.proximity - 10;
+        }
+        camera.rot += (cameraRotDest - camera.rot) / 5;
+        GROUND_Y += (groundYDest - GROUND_Y) / 5;
+        cameraDist += (cameraDistDest - cameraDist) / 5;
+        if (frame >= expectedFrame) ({paths, objects} = calculate3D(
+          [beginningPath, ...currentMap.paths, ...(nextMap || {paths: []}).paths],
+          [playerObject, !player.seeCC && curlymangoBack, ...currentMap.objects, ...(nextMap || {objects: []}).objects],
+          playerObject.x, playerObject.z
+        ));
+      } else if (mode.slice(0, 4) === 'menu') {
+        camera.rot += (cameraRotDest - camera.rot) / 300;
+        if (frame > menu.nextRefocus) {
+          menu.nextRefocus = frame + 300;
+          menu.focusX = Math.random() * 400 - 200;
+          menu.focusZ = Math.random() * 400 - 200;
+          cameraDist = Math.random() * 400 - 200;
+          GROUND_Y = Math.random() * 80 + 10;
+          camera.rot = Math.atan2(-menu.focusX, -menu.focusZ);
+          cameraRotDest = camera.rot + Math.PI / 2;
+        }
+        if (frame >= expectedFrame) ({paths, objects} = calculate3D([], menu.objects, menu.focusX, menu.focusZ));
+      } else if (mode === 'play-again') {
+        cameraDist = 500;
+        GROUND_Y = Math.sin(frame / 60) * 30 + 70;
+        camera.rot = Math.PI + Math.sin(frame / 44) / 20;
+        if (frame >= expectedFrame) ({paths, objects} = calculate3D(playAgain.paths, playAgain.objects, 0, 0));
+      } else if (mode === 'intro') {
+        if (keys.skip) {
+          return 'game';
+        }
+        const progress = frame - intro.startTime;
+        if (progress < intro.times.zoomToV1) {
+          cameraDist -= 0.5;
+        } else if (progress < intro.times.studentComeOut) {
+          if (intro.lastTime !== 'studentComeOut') {
+            shakeRadius = 20;
+            intro.lastTime = 'studentComeOut';
+          }
+          shakeRadius *= 0.9;
+          intro.objects.student.z -= 3;
+        } else if (progress < intro.times.studentRunAway) {
+          shakeRadius = 0;
+          intro.objects.student.x += 5;
+        } else if (progress < intro.times.securityCamera) {
+          if (intro.lastTime !== 'securityCamera') {
+            GROUND_Y = 120;
+            intro.focusX = -130;
+            cameraDist = 150;
+            intro.lastTime = 'securityCamera';
+          }
+          cameraDist -= 0.5;
+          shakeRadius += 0.1;
+        } else {
+          return 'game';
+        }
+        if (frame >= expectedFrame) ({paths, objects} = calculate3D(intro.paths, Object.values(intro.objects), intro.focusX, intro.focusZ));
       }
-      if (frame >= expectedFrame) ({paths, objects} = calculate3D(intro.paths, Object.values(intro.objects), intro.focusX, intro.focusZ));
-    }
-  } while (frame < expectedFrame);
+    } while (frame < expectedFrame);
+  }
 
   const start = performance.now();
   c.fillStyle = '#b0a47e';
@@ -398,21 +423,49 @@ function paint() {
     });
     c.fill();
   }
+  if (params.minimalCoins) c.fillStyle = `rgba(229, 139, 139, ${params.minimalCoins})`;
   objects.forEach((obj, i) => {
     if (i < noRenderUnder) return;
-    if (params.autoCensor && obj.type === 'aplus' && obj.scale < 0.7) return;
+    if (params.autoCensor && !params.minimalCoins && obj.type === 'aplus' && obj.scale < 0.7) return;
     objectsRendered++;
     if (obj.translucency !== null) c.globalAlpha = obj.translucency;
     const img = imageData[obj.type];
     const width = obj.scale * (customSizes[obj.type] ? customSizes[obj.type][0] : img.width);
     const height = obj.scale * (customSizes[obj.type] ? customSizes[obj.type][1] : img.height);
-    drawIfInCanvas(img, obj.x - width / 2 + shakeX, obj.y - height + shakeY, width, height);
+    if (params.minimalCoins && obj.type === 'aplus') {
+      c.beginPath();
+      c.arc(obj.x + shakeX, obj.y - height / 2 + shakeY, width / 2, 0, fullCircle);
+      c.fill();
+    } else {
+      drawIfInCanvas(img, obj.x - width / 2 + shakeX, obj.y - height + shakeY, width, height);
+    }
     if (obj.translucency !== null) c.globalAlpha = 1;
   });
   const time = performance.now() - start;
   if (params.autoCensor && time) {
     if (renderLimit === null) renderLimit = Math.floor(objectsRendered * +params.autoCensor / time);
     else renderLimit = Math.floor((objectsRendered * +params.autoCensor / time + renderLimit) / 2);
+  }
+  if (params.showFPS) {
+    if (lastFrameTime !== null) {
+      const left = -cwidth / 2;
+      const bottom = cheight / 2;
+      drawFPSMarkers(left, bottom);
+      const fps = 1000 / (now - lastFrameTime);
+      c.fillStyle = 'black';
+      c.font = '24px monospace';
+      c.fillText(Math.round(fps), left, bottom);
+      fpsHist.unshift(fps);
+      if (fpsHist.length > MAX_FPS_HIST_LEN) fpsHist.pop();
+      c.strokeStyle = 'black';
+      c.beginPath();
+      c.moveTo(left, bottom - fps);
+      for (let i = 1; i < fpsHist.length; i++) {
+        c.lineTo(left + i, bottom - fpsHist[i]);
+      }
+      c.stroke();
+    }
+    lastFrameTime = now;
   }
 }
 
@@ -825,6 +878,9 @@ function generateMap(zOffset, justTurned = false) {
 // mouseCircle   - enables touch circle for mouse
 // playerOpacity - opacity of player
 // noShadows     - hides shadows
+// minimalCoins  - draws circles instead of rendering images for coins; opacity of the circles
+// showFPS       - shows the FPS and an FPS graph in the bottom left
+// capFPS        - does not calculate next frame in case your frame rate is oddly high
 const params = {};
 if (window.location.search) {
   window.location.search.slice(1).split('&').forEach(entry => {
@@ -837,7 +893,7 @@ if (window.location.search) {
   });
 }
 
-const VERSION = 1.3;
+const VERSION = 1.4;
 const HIGHSCORE_COOKIE = '[fun-gunn-run] highscore';
 // modified regex from  https://stackoverflow.com/questions/161738/what-is-the-best-regular-expression-to-check-if-a-string-is-a-valid-url#comment19948615_163684
 const urlRegex = /^(https?):\/\/[\-A-Za-z0-9+&@#\/%?=~_|!:,.;]*[\-A-Za-z0-9+&@#\/%=~_|]$/;
@@ -1156,12 +1212,18 @@ function init() {
   const mouseCircleInput = document.getElementById('mouse-circle');
   const playerOpacityInput = document.getElementById('player-opacity');
   const noShadowsInput = document.getElementById('no-shadows');
+  const minimalCoinsInput = document.getElementById('minimal-coins');
+  const showFPSInput = document.getElementById('show-fps');
+  const capFPSInput = document.getElementById('cap-fps');
   const outputLink = document.getElementById('generate-url');
   if (params.quality) qualityInput.value = params.quality;
   if (params.autoCensor) autoCensorInput.value = params.autoCensor;
   if (params.mouseCircle) mouseCircleInput.checked = true;
   if (params.playerOpacity) playerOpacityInput.value = params.playerOpacity;
   if (params.noShadows) noShadowsInput.checked = true;
+  if (params.minimalCoins) minimalCoinsInput.value = params.minimalCoins;
+  if (params.showFPS) showFPSInput.checked = true;
+  if (params.capFPS) capFPSInput.checked = true;
   function updateURL() {
     let params = [];
     if (quality.value) params.push('quality=' + quality.value);
@@ -1169,13 +1231,20 @@ function init() {
     if (mouseCircleInput.checked) params.push('mouseCircle');
     if (playerOpacityInput.value) params.push('playerOpacity=' + playerOpacityInput.value);
     if (noShadowsInput.checked) params.push('noShadows');
-    outputLink.href = '?' + params.join('&');
+    if (minimalCoinsInput.value) params.push('minimalCoins=' + minimalCoinsInput.value);
+    if (showFPSInput.checked) params.push('showFPS');
+    if (capFPSInput.checked) params.push('capFPS');
+    if (params.length) outputLink.href = '?' + params.join('&');
+    else outputLink.href = './';
   }
   qualityInput.addEventListener('input', updateURL);
   autoCensorInput.addEventListener('input', updateURL);
   mouseCircleInput.addEventListener('change', updateURL);
   playerOpacityInput.addEventListener('input', updateURL);
   noShadowsInput.addEventListener('change', updateURL);
+  minimalCoinsInput.addEventListener('input', updateURL);
+  showFPSInput.addEventListener('change', updateURL);
+  capFPSInput.addEventListener('change', updateURL);
   updateURL();
 
   [...document.getElementsByTagName('button'), ...document.getElementsByTagName('input')].forEach(btn => btn.disabled = true);

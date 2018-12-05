@@ -33,6 +33,11 @@
         <p>This is a Gunn-themed version of Temple Run but with very, very bad graphics. You, a student, attempt to escape SELF, but Curlymango starts chasing you. You try to outrun her, but she's surprisingly resilient.</p>
         <p>This game is open-sourced on <a href="https://github.com/SheepTester/fun-gunn-run" class="link">Github</a>; bug reports and feature requests can go there. Anyone may (and should) make own version of this game, though please consider crediting the creator or link to this game somewhere.</p>
         <h2>Updates</h2>
+        <p>Update 1.4</p>
+        <ul>
+          <li>FPS things</li>
+          <li>option to fast-render coins</li>
+        </ul>
         <p>Update 1.3</p>
         <ul>
           <li>you can now tap on other things with a second finger while using the joystick</li>
@@ -101,6 +106,9 @@
         <p>Mouse joystick? <input type="checkbox" id="mouse-circle"> This lets you use the touch joystick with the mouse.</p>
         <p>Player opacity <input type="text" class="number" id="player-opacity" placeholder="0.6"> (a number between 0 and 1) Default is 0.6.</p>
         <p>Hide shadows? <input type="checkbox" id="no-shadows"></p>
+        <p>Minimal coins? <input type="text" class="number" id="minimal-coins" placeholder="0.8"> (a number between 0 and 1) Renders pink circles instead of an image for coins; you can set the opacity.</p>
+        <p>Show FPS? <input type="checkbox" id="show-fps"> Shows the FPS and a graph on the bottom left.</p>
+        <p>Cap FPS? <input type="checkbox" id="cap-fps"> Skips calculations if your frame rate is ahead of the expected 60 fps.</p>
         <p><a class="btn" id="generate-url">generate</a></p>
       </div>
       <button class="btn menu-btn" id="from-options-back">back to menu</button>
