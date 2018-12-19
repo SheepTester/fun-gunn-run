@@ -20,7 +20,7 @@ if (window.location.search) {
   });
 }
 
-const VERSION = 1.4;
+const VERSION = 1.5;
 const HIGHSCORE_COOKIE = '[fun-gunn-run] highscore';
 // modified regex from  https://stackoverflow.com/questions/161738/what-is-the-best-regular-expression-to-check-if-a-string-is-a-valid-url#comment19948615_163684
 const urlRegex = /^(https?):\/\/[\-A-Za-z0-9+&@#\/%?=~_|!:,.;]*[\-A-Za-z0-9+&@#\/%=~_|]$/;
